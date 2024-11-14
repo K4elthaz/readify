@@ -1,0 +1,29 @@
+{% for community in communities %}
+    <div class="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-4 py-5 shadow hover:border-gray-400">
+        <div class="flex-shrink-0">
+                        <span class="inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-pink-500">
+                            <span class="text-lg sm:text-xl font-medium leading-none text-white">{{ community.initials }}</span>
+                        </span>
+        </div>
+        <div class="min-w-0 flex-1">
+            <div class="focus:outline-none">
+                <div class="flex justify-between items-center">
+                    <p class="text-sm sm:text-base font-semibold text-gray-900">{{ community.name }}</p>
+                    <button hx-get="{% url 'join_community_service' slug=community.slug %}"
+                            type="button"
+                            class="cursor-pointer rounded-full bg-pink-500 px-3 py-1 text-xs sm:text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-pink-600 hover:bg-pink-600">
+                        Join
+                    </button>
+                </div>
+                <p class="text-xs font-medium text-gray-800">{{ community.total_members }}
+                    {% if community.total_members <= 1 %}
+                        member
+                    {% else %}
+                        members
+                    {% endif %}
+                </p>
+                <p class="truncate text-sm text-gray-500">{{ community.description }}</p>
+            </div>
+        </div>
+    </div>
+{% endfor %}

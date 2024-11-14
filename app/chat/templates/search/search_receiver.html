@@ -1,0 +1,18 @@
+{% if users %}
+    <div class=" absolute max-h-40 overflow-y-auto w-full bg-white shadow-lg rounded-md z-40 ">
+        <ul role="list" class="divide-y divide-gray-100">
+            {% for user in users %}
+                <li hx-get="{% url 'view_message_details' pk=user.id %}" class="cursor-pointer flex gap-x-4 py-3 px-4 hover:bg-gray-50 transition duration-150 ease-in-out">
+                    <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                         src="{{ user.profile_picture }}"
+                         alt="">
+                    <div class="min-w-0">
+                        <p class="text-sm font-semibold leading-6 text-gray-900">{{ user.full_name }}</p>
+                        <p class="mt-1 truncate text-xs leading-5 text-gray-500">@{{ user.username }}</p>
+                    </div>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+{% endif %}

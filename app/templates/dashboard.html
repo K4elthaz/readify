@@ -1,0 +1,8 @@
+{% extends 'layout.html' %}
+
+{% block layout %}
+    <div hx-get="{% url 'analytics_service' %}" hx-target="#dashboard" hx-swap="innerHTML" hx-trigger="load"></div>
+
+    <div id="dashboard"></div>
+
+{% endblock %}

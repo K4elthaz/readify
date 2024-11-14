@@ -1,0 +1,165 @@
+{% extends 'layout.html' %}
+{% load tailwind_filters %}
+{% load static %}
+
+{% block script %}
+    <script src="https://cdn.tiny.cloud/1/2fpott3ott8uvdg1mi1p79ohxh45vg1d6jrl1kyi7b10k72p/tinymce/7/tinymce.min.js"
+            referrerpolicy="origin"></script>
+
+    <script>
+        const slug = "{{ slug }}";
+        const initialContent = `{{ content|safe }}`;
+        const debounceDelay = 400; // Delay in milliseconds
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        // Initialize WebSocket connection
+        const socket = new WebSocket(protocol + window.location.host + '/ws/collaborate/' + slug + '/');
+
+        // Function to get and set the caret position in TinyMCE
+        function saveCursor(editor) {
+            const bookmark = editor.selection.getBookmark(2, true);
+            return bookmark;
+        }
+
+        function restoreCursor(editor, bookmark) {
+            editor.selection.moveToBookmark(bookmark);
+        }
+
+        let timeout; // For debounce
+
+        // Listen for TinyMCE content changes and send the updates via WebSocket
+        tinymce.init({
+            selector: '#content',
+            height: 500,
+            menubar: false,
+            plugins: 'advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table code help wordcount',
+            toolbar: 'undo redo | blocks | bold italic backcolor | alignleft aligncenter alignright alignjustify | removeformat | help',
+            content_style: 'body { font-family:Helvetica,Arial,sans-serif; font-size:14px }',
+            toolbar_sticky: true,
+            icons: 'thin',
+            autosave_restore_when_empty: true,
+
+            init_instance_callback: function (editor) {
+                // Set initial content
+                editor.setContent(initialContent);
+
+                // Listen for 'input' event to detect changes in the editor content
+                editor.on('input', function () {
+                    clearTimeout(timeout); // Clear previous timeout
+
+                    const content = editor.getContent();
+                    const bookmark = saveCursor(editor); // Save cursor position
+
+                    // Debounce the sending of updates
+                    timeout = setTimeout(() => {
+                        // Send the updated content via WebSocket
+                        if (socket.readyState === WebSocket.OPEN) {
+                            socket.send(JSON.stringify({
+                                action: 'update_content',
+                                content: content,
+                                bookmark: bookmark
+                            }));
+                        }
+                    }, debounceDelay);
+                });
+            }
+        });
+
+        // Listen for incoming WebSocket messages from other users
+        socket.onmessage = function (event) {
+            const data = JSON.parse(event.data);
+
+            if (data.type === 'content_update' && tinymce.activeEditor) {
+                const editor = tinymce.activeEditor;
+
+                // Save the current cursor position
+                const currentBookmark = saveCursor(editor);
+
+                // Update content only if it differs
+                if (data.content !== editor.getContent()) {
+                    editor.setContent(data.content); // Set new content
+                }
+
+                // Restore the cursor position for the local user
+                restoreCursor(editor, currentBookmark);
+
+                // If the message contains a cursor position from another user, apply it
+                if (data.bookmark) {
+                    restoreCursor(editor, data.bookmark);
+                }
+
+                // Update the textarea content as well
+                document.querySelector('#content').value = data.content;
+            }
+        };
+
+        // WebSocket connection handling
+        socket.onclose = function (e) {
+            console.log("WebSocket connection closed");
+        };
+
+        socket.onerror = function (e) {
+            console.error("WebSocket error: ", e);
+        };
+    </script>
+{% endblock %}
+
+{% block layout %}
+
+    <div>
+        <div class="border-b border-gray-200 bg-white px-4 py-5 sm:px-6">
+            <div class="flex flex-wrap items-center justify-between sm:flex-nowrap">
+                <div class="ml-4 mt-4">
+                    <h2 class="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+                        Update your amazing story here</h2>
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ page_description }}
+                    </p>
+                </div>
+                <div class="ml-4 mt-4 flex-shrink-0">
+
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white">
+            <div class="mx-auto max-w-7xl overflow-hidden py-10 sm:px-6 lg:px-8">
+                <div id="contentForm">
+                    <form
+                            hx-post="{% url 'update_book_content_service' slug=slug %}"
+                            hx-trigger="submit"
+                            hx-target="#message"
+                            onsubmit="tinymce.triggerSave();"
+                    >  <!-- This ensures TinyMCE content is saved -->
+                        {% csrf_token %}
+                        <div class="border-b border-gray-200 pb-5 mb-5">
+                            <h2 class="text-lg font-semibold leading-6 text-gray-600">
+                                <span class="text-red-500">*</span>
+                                <span>Chapter #{{ current_chapter_number }}</span>
+                            </h2>
+                        </div>
+                        {{ form|crispy }}
+
+                        <label for="content" class="block text-gray-700 text-sm font-bold mb-2">
+                            Write your content here
+                        </label>
+                        <p class="text-xs text-gray-600 mb-5">
+                            <span class="text-red-600 font-semibold">*Note:</span> The content editor automatically
+                            saves your work. Whatever you type here will be saved automatically, and your co-author will
+                            see the changes in real time.
+                        </p>
+
+                        <textarea id="content" name="content"></textarea>  <!-- The textarea for TinyMCE -->
+
+                        <div id="message" class="mt-2"></div>
+                        <button type="submit"
+                                class="mt-5 w-full rounded-md bg-pink-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                            Save
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+{% endblock %}

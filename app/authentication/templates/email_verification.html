@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Email Verification</title>
+    <style>
+        /* General email styling */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .email-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .email-header {
+            text-align: center;
+            background-color: #ec4899;
+            padding: 20px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .email-header h1 {
+            color: #ffffff;
+            margin: 0;
+            font-size: 24px;
+        }
+
+        .email-body {
+            padding: 20px;
+            color: #333333;
+            line-height: 1.6;
+        }
+
+        .email-body p {
+            margin-bottom: 20px;
+        }
+
+        .email-footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            color: #888888;
+        }
+
+        .verification-button {
+            display: inline-block;
+            padding: 12px 24px;
+            background-color: #ec4899;
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .verification-button:hover {
+            background-color: #d83683;
+        }
+    </style>
+</head>
+<body>
+<div class="email-container">
+    <!-- Email Header -->
+    <div class="email-header">
+        <h1>Email Verification</h1>
+    </div>
+
+    <!-- Email Body -->
+    <div class="email-body">
+        <p>Hello,</p>
+        <p>Thank you for signing up in ! Please verify your email by clicking the button below:</p>
+        <p style="text-align: center;">
+            <a href="{{ verification_link }}" class="verification-button">Verify Email</a>
+        </p>
+        <p>If you did not sign up, please ignore this email.</p>
+    </div>
+
+    <!-- Email Footer -->
+    <div class="email-footer">
+        <p>© 2024 Readify. All rights reserved.</p>
+    </div>
+</div>
+</body>
+</html>

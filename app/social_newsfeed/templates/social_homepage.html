@@ -1,0 +1,206 @@
+{% extends "layout.html" %}
+{% load humanize %}
+{% block layout %}
+
+    <div hx-get="{% url 'show_success_creating__post_today_service' %}" hx-target="#claimRewardsForPosting"
+         hx-trigger="load"></div>
+
+    <div id="claimRewardsForPosting"></div>
+    <div class="bg-white">
+        <div class="mx-auto max-w-4xl overflow-hidden py-10 px-2 sm:px-6 lg:px-8">
+
+            <div class="flex items-start space-x-4">
+                <!-- User profile picture -->
+                <div class="flex-shrink-0">
+                    <img class="inline-block h-10 w-10 rounded-full"
+                         src="{{ user.profile_picture }}"
+                         alt="User profile picture">
+                </div>
+
+                <!-- Comment form section -->
+                <div class="min-w-0 flex-1">
+                    <form hx-post="{% url 'new_post' %}" method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <!-- Username and comment box -->
+                        <div class="border-b border-gray-200 focus-within:border-pink-600">
+                            <label for="caption" class="text-gray-700">@{{ user.username }}</label>
+                            <textarea required rows="3" name="caption" id="caption"
+                                      class="block w-full resize-none border-0 border-b border-transparent p-0 pb-2 text-gray-900 placeholder:text-gray-400 focus:border-pink-600 focus:ring-0 sm:text-sm sm:leading-6"
+                                      placeholder="What's on your mind?"></textarea>
+                        </div>
+
+                        <!-- Attach files and Post button -->
+                        <div class="flex justify-between pt-2">
+                            <div class="flex items-center space-x-5">
+                                <!-- Attach files button (hidden file input) -->
+                                <div class="flow-root">
+                                    <label for="file-upload"
+                                           class="cursor-pointer -m-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-gray-400 hover:text-gray-500">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                             stroke-width="1.5" stroke="currentColor" class="h-6 w-6 rounded-lg">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                                        </svg>
+                                        <span class="sr-only">Attach files</span>
+                                    </label>
+                                    <!-- Hidden input for attaching files (supports multiple) -->
+                                    <input id="file-upload" name="files[]" type="file" accept="image/*,video/*" multiple
+                                           class="sr-only" onchange="showFiles(event)">
+                                </div>
+                            </div>
+
+                            <!-- Submit/Post button -->
+                            <div class="flex-shrink-0">
+                                <button type="submit"
+                                        class="inline-flex items-center rounded-full bg-pink-600 px-8 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                                    Post
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Selected file previews in a grid layout -->
+                        <div id="file-previews" class="mt-4 grid grid-cols-5 gap-x-2 ">
+                            <!-- Dynamically populated previews will be inserted here -->
+                        </div>
+
+                        <!-- Error message if user tries to upload more than 5 files -->
+                        <div id="file-error" class="text-sm text-red-600 mt-2 hidden">
+                            You can only upload up to 5 files.
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <div class="bg-white shadow sm:rounded-lg">
+                <!-- Loop through the list of posts -->
+                {% for post in posts %}
+                    <div class="py-10 px-3 border-b border-gray-200">
+                        <div class="flex items-start space-x-4">
+                            <!-- User profile picture -->
+                            <div class="flex-shrink-0">
+                                <img class="h-10 w-10 rounded-full" src="{{ post.author.profile_picture }}"
+                                     alt="Profile picture">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <!-- Post user and timestamp -->
+                                <div class="text-sm">
+                                    <span class="font-semibold text-gray-900">@{{ post.author.username }}</span>
+                                    <span class="text-gray-500">• {{ post.created_at|naturaltime }}</span>
+                                </div>
+                                <!-- Post content -->
+                                <p class="mt-1 text-gray-700 text-sm">
+                                    {{ post.caption }}
+                                </p>
+
+                                <!-- If post has media (images/videos) -->
+                                {% if post.media|length >= 1 %}
+                                    <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                                        <!-- Loop through attached media files -->
+                                        {% for media_file in post.media %}
+                                            <div class="w-full">
+                                                {% if media_file.resource_type == 'image' %}
+                                                    <img src="{{ media_file.url }}" alt="Image"
+                                                         class="rounded-lg object-cover w-full h-40">
+                                                {% elif media_file.resource_type == 'video' %}
+                                                    <video controls class="rounded-lg w-full h-40">
+                                                        <source src="{{ media_file.url }}" type="video/mp4">
+                                                        Your browser does not support the video tag.
+                                                    </video>
+                                                {% endif %}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+
+                                {#                                <!-- Post interactions (likes, comments) -->#}
+                                {#                                <div class="mt-3 flex items-center space-x-4 text-gray-500 text-sm">#}
+                                {#                                    <button type="button" class="inline-flex items-center space-x-1">#}
+                                {#                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"#}
+                                {#                                             stroke-width="1.5" stroke="currentColor" class="h-5 w-5">#}
+                                {#                                            <path stroke-linecap="round" stroke-linejoin="round"#}
+                                {#                                                  d="M14 9l-6 6m0 0l6-6m-6 6V3"></path>#}
+                                {#                                        </svg>#}
+                                {#                                        <span>{{ post.likes_count }} Likes</span>#}
+                                {#                                    </button>#}
+                                {##}
+                                {#                                    <button type="button" class="inline-flex items-center space-x-1">#}
+                                {#                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"#}
+                                {#                                             stroke-width="1.5" stroke="currentColor" class="h-5 w-5">#}
+                                {#                                            <path stroke-linecap="round" stroke-linejoin="round"#}
+                                {#                                                  d="M12 20.25c3.75 0 6.75-3 6.75-6.75S15.75 6.75 12 6.75 5.25 9.75 5.25 13.5c0 3.75 3 6.75 6.75 6.75Z"/>#}
+                                {#                                            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 10.5H8.25"/>#}
+                                {#                                        </svg>#}
+                                {#                                        <span>{{ post.comments_count }} Comments</span>#}
+                                {#                                    </button>#}
+                                {#                                </div>#}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Function to display selected files (images or videos) and enforce file limit of 5
+        function showFiles(event) {
+            const fileInput = event.target;
+            const previewContainer = document.getElementById('file-previews');
+            const errorContainer = document.getElementById('file-error');
+            const files = fileInput.files;
+
+            // Clear any previous previews or error messages
+            previewContainer.innerHTML = '';
+            errorContainer.classList.add('hidden');
+
+            // Check if the user tries to upload more than 5 files
+            if (files.length > 5) {
+                errorContainer.classList.remove('hidden');
+                fileInput.value = ''; // Clear the input if they exceed the limit
+                return;
+            }
+
+            // Process and preview each selected file
+            for (const file of files) {
+                const fileReader = new FileReader();
+
+                fileReader.onload = function (e) {
+                    const fileURL = e.target.result;
+                    const fileType = file.type;
+                    let previewElement;
+
+                    // Check if the file is an image or video and create the appropriate preview element
+                    if (fileType.startsWith('image/')) {
+                        previewElement = document.createElement('img');
+                        previewElement.src = fileURL;
+                        previewElement.className = 'h-40 w-40 rounded-lg object-cover';
+                    } else if (fileType.startsWith('video/')) {
+                        previewElement = document.createElement('video');
+                        previewElement.src = fileURL;
+                        previewElement.controls = true;
+                        previewElement.className = 'h-40 w-40 rounded-lg object-cover';
+                    }
+
+                    // Append the preview element to the container
+                    previewContainer.appendChild(previewElement);
+                };
+
+                // Read the file to trigger the onload event
+                fileReader.readAsDataURL(file);
+            }
+        }
+
+        function closeSocialPostRewardModal() {
+            const socialPostRewardModal = document.getElementById("socialPostRewardModal")
+            if (socialPostRewardModal) {
+                if (socialPostRewardModal.classList.contains('hidden')) {
+                    socialPostRewardModal.classList.remove('hidden')
+                } else {
+                    socialPostRewardModal.classList.add('hidden')
+                }
+            } else {
+                console.log('socialPostRewardModal element not found.');
+            }
+        }
+    </script>
+{% endblock %}

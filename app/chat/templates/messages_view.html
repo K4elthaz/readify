@@ -1,0 +1,164 @@
+{% extends 'layout.html' %}
+{% load tailwind_filters %}
+{% load humanize %}
+{% load human_readable_time %}
+
+{% block layout %}
+    <div id="message_details">
+        <div class="flex h-full flex-col">
+
+            <!-- Bottom section -->
+            <div class="flex min-h-0 flex-1 overflow-hidden">
+
+                <!-- Main area -->
+                <main class="min-w-0 flex-1 border-t border-gray-200 xl:flex">
+                    <section aria-labelledby="message-heading"
+                             class="flex h-full min-w-0 flex-1 flex-col overflow-hidden hidden xl:order-last">
+
+                    </section>
+
+                    <!-- Message list-->
+                    <aside class="xl:order-first xl:block xl:flex-shrink-0">
+                        <div class="relative flex flex-col border-r border-gray-200 bg-gray-100">
+                            <div>
+                                <div class="relative mt-2 rounded-md shadow-sm">
+                                    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                             stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-gray-400">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                  d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+                                        </svg>
+                                    </div>
+                                    <input name="search" id="search"
+                                           class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                                           placeholder="Search ..."
+                                           hx-get="{% url 'search_receiver' %}"
+                                           hx-target="#search-results"
+                                           hx-trigger="keyup changed delay:500ms"
+                                           autocomplete="off">
+                                </div>
+                                <p class="text-xs text-gray-600 px-1 py-0.5">
+                                    If you have any issues or need assistance, please send a direct message to <span
+                                        class="font-semibold">tech_support</span>.
+                                </p>
+
+
+                                <!-- Container for displaying search results -->
+                                <div id="search-results"
+                                     class="mt-1 max-h-48 bg-white border border-gray-300 rounded-md shadow-lg overflow-y-auto px-2">
+                                    <!-- Search results will be dynamically populated here -->
+                                </div>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <div class="flex h-16 flex-col justify-center bg-white px-6">
+                                    <div class="flex items-baseline space-x-3">
+                                        <h2 class="text-lg font-medium text-gray-900">Inbox</h2>
+                                        <p class="text-sm font-medium text-gray-500">{{ total_distinct_receivers }}
+                                            messages</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <nav aria-label="Message list" class="min-h-0 flex-1 overflow-y-auto mt-5 bg-white px-2">
+                                <ul role="list" class="divide-y divide-gray-100 w-full lg:w-96">
+                                    {% for message in messages %}
+                                        {% if message.receiver == user %}
+                                            <li hx-get="{% url 'view_message_details' pk=message.sender.id %}"
+                                                class="relative flex justify-between gap-x-6 py-5">
+                                                <div class="flex min-w-0 gap-x-4">
+                                                    <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                                         src="{{ message.sender.profile_picture }}"
+                                                         alt="">
+                                                    <div class="min-w-0 flex-auto">
+                                                        <p class="text-sm font-semibold leading-6 text-gray-900">
+                                                            <a href="">
+                                                                <span class="absolute inset-x-0 -top-px bottom-0"></span>
+                                                                {{ message.sender.full_name }}
+                                                            </a>
+                                                        </p>
+                                                        <div class="mt-1 flex text-xs leading-5 text-gray-500">
+                                                            <p
+                                                                    class="relative truncate">
+                                                                @{{ message.sender.username }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex shrink-0 items-center gap-x-4">
+                                                    <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 20 20"
+                                                         fill="currentColor" aria-hidden="true" data-slot="icon">
+                                                        <path fill-rule="evenodd"
+                                                              d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+                                                              clip-rule="evenodd"/>
+                                                    </svg>
+                                                </div>
+                                            </li>
+                                        {% else %}
+                                            <li hx-get="{% url 'view_message_details' pk=message.receiver.id %}"
+                                                class="relative flex justify-between gap-x-6 py-5">
+                                                <div class="flex min-w-0 gap-x-4">
+                                                    <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                                         src="{{ message.receiver.profile_picture }}"
+                                                         alt="">
+                                                    <div class="min-w-0 flex-auto">
+                                                        <p class="text-sm font-semibold leading-6 text-gray-900">
+                                                            <a href="">
+                                                                <span class="absolute inset-x-0 -top-px bottom-0"></span>
+                                                                {{ message.receiver.full_name }}
+                                                            </a>
+                                                        </p>
+                                                        <div class="mt-1 flex text-xs leading-5 text-gray-500">
+                                                            <p
+                                                                    class="relative truncate">
+                                                                @{{ message.receiver.username }}</p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="flex shrink-0 items-center gap-x-4">
+                                                    <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 20 20"
+                                                         fill="currentColor" aria-hidden="true" data-slot="icon">
+                                                        <path fill-rule="evenodd"
+                                                              d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+                                                              clip-rule="evenodd"/>
+                                                    </svg>
+                                                </div>
+                                            </li>
+                                        {% endif %}
+                                    {% endfor %}
+                                </ul>
+                            </nav>
+                        </div>
+                    </aside>
+                </main>
+            </div>
+        </div>
+    </div>
+    <script>
+
+        function storeUserID(userID) {
+            localStorage.removeItem("userID")
+            localStorage.setItem("userID", userID)
+        }
+
+        // Preview image before sending
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById('image-preview');
+                    const img = document.getElementById('preview-img');
+                    img.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Remove image preview
+        document.getElementById('remove-img').addEventListener('click', function () {
+            const preview = document.getElementById('image-preview');
+            const imgInput = document.getElementById('file-upload');
+            imgInput.value = '';  // Clear the input value
+            preview.classList.add('hidden');
+        });
+    </script>
+{% endblock %}

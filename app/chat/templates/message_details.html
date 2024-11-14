@@ -1,0 +1,347 @@
+{% extends 'layout.html' %}
+{% load tailwind_filters %}
+{% load humanize %}
+{% load human_readable_time %}
+
+{% block layout %}
+    <div class="flex flex-col xl:flex-row h-full">
+
+        <!-- Main content section -->
+        <main class="flex-1 min-h-0 xl:order-last xl:flex">
+            <section aria-labelledby="message-heading" class="flex-1 flex flex-col min-h-0 overflow-hidden">
+                <!-- Message details and input -->
+                <div id="message_details" class="flex flex-col flex-1 min-h-0 justify-between">
+
+                    <!-- Header -->
+                    <div class="bg-white py-5 shadow">
+                        <div class="px-4 sm:flex sm:items-center sm:justify-between sm:px-6 lg:px-8">
+                            <div class="sm:w-0 sm:flex-1">
+                                <a href="/messages" class="flex lg:hidden text-sm text-gray-600 gap-x-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                         stroke-width="1.5" stroke="currentColor" class="size-6">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"/>
+                                    </svg>
+                                    Inbox
+                                </a>
+                                <h1 id="message-heading"
+                                    class="text-lg font-medium text-gray-900">{{ other_user.full_name }}</h1>
+                                <p class="mt-1 text-sm text-gray-500">@{{ other_user.username }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Chat log (scrollable) -->
+                    <div class="flex-1 overflow-y-auto py-4 px-4 sm:px-6 lg:px-8 h-64 sm:h-80">
+                        <ul role="list" id="chat-log" class="space-y-2 sm:space-y-4 h-80  overflow-y-auto">
+                            {% for message in messages %}
+                                {% if message.receiver == request.user %}
+                                    <!-- Incoming message -->
+                                    <li class="flex items-start">
+                                        <div class="bg-gray-100 px-4 py-2 rounded-lg shadow-sm text-gray-800 break-words max-w-full">
+                                            <p class="text-sm">{{ message.message }}</p>
+                                            {% if message.image_attachment_url %}
+                                                <img src="{{ message.image_attachment_url }}" alt=""
+                                                     class="w-64 h-auto object-cover rounded-lg">
+                                            {% endif %}
+                                            <span class="block text-xs text-gray-500 mt-1"><time>{{ message.timestamp|naturaltime }}</time></span>
+                                        </div>
+                                    </li>
+                                {% else %}
+                                    <!-- Outgoing message -->
+                                    <li class="flex justify-end">
+                                        <div class="bg-blue-500 text-white px-4 py-2 rounded-lg shadow-sm break-words max-w-full">
+                                            <p class="text-sm">{{ message.message }}</p>
+                                            {% if message.image_attachment_url %}
+                                                <img src="{{ message.image_attachment_url }}" alt=""
+                                                     class="w-64 h-auto object-cover rounded-lg">
+                                            {% endif %}
+                                            <span class="block text-xs text-gray-300 mt-1"><time>{{ message.timestamp|naturaltime }}</time></span>
+                                        </div>
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <!-- Input area -->
+                    <div class="bg-white px-4 py-2 border-t">
+                        <div class="flex items-center space-x-3">
+                            <!-- Image preview -->
+                            <div id="image-preview" class="hidden relative">
+                                <img id="preview-img" src="" alt="Image preview"
+                                     class="h-12 w-12 object-cover rounded-lg">
+                                <button type="button" id="remove-img"
+                                        class="absolute bg-white -top-2 -right-2 text-red-500 p-1 rounded-full">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                         stroke-width="1.5" stroke="currentColor" class="h-5 w-5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M14.74 9L9.26 9M4.772 5.79L18.16 19.673M9.26 9L14.74 9M4.772 5.79c.342.052.682.107 1.022.166m-1.022-.165L9.26 9m-4.788 0L14.74 9M4.772 5.79m12.178 13.883H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m12 .165A48.108 48.108 0 0 0 4.772 5.79"></path>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            <!-- Attach image -->
+                            <label for="chat-message-file-upload" class="cursor-pointer">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                     stroke-width="1.5" stroke="currentColor" class="h-6 text-gray-500">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909m-18 3.75h16.5a1.5 1.5 0 0 0 1.5-1.5V6a1.5 1.5 0 0 0-1.5-1.5H3.75A1.5 1.5 0 0 0 2.25 6v12a1.5 1.5 0 0 0 1.5 1.5Zm10.5-11.25h.008v.008h-.008V8.25Zm.375 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z"/>
+                                </svg>
+                            </label>
+                            <input id="chat-message-file-upload" type="file" class="hidden" accept="image/*"
+                                   onchange="previewImage(event)">
+
+                            <!-- Message input -->
+                            <input type="text" id="chat-message-input" placeholder="Type a message..."
+                                   autocomplete="off" keyup[enterKey]
+                                   class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring focus:ring-blue-500">
+
+                            <!-- Send button -->
+                            <button type="button" id="chat-message-submit"
+                                    class="bg-blue-500 text-white px-4 py-2 sm:text-xs rounded-lg hover:bg-blue-600">
+                                Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Sidebar -->
+        <aside class="xl:order-first xl:block xl:flex-shrink-0">
+            <div class="relative flex flex-col border-r border-gray-200 bg-gray-100">
+                <div>
+                    <div class="relative mt-2 rounded-md shadow-sm">
+                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                 stroke-width="1.5" stroke="currentColor" class="h-5 w-5 text-gray-400">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z"/>
+                            </svg>
+                        </div>
+                        <input name="search" id="search"
+                               class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                               placeholder="Search ..."
+                               hx-get="{% url 'search_receiver' %}"
+                               hx-target="#search-results"
+                               hx-trigger="keyup changed delay:500ms"
+                               autocomplete="off">
+                    </div>
+                    <p class="text-xs text-gray-600 px-1 py-0.5">
+                        If you have any issues or need assistance, please send a direct message to <span
+                            class="font-semibold">tech_support</span>.
+                    </p>
+
+                    <!-- Container for displaying search results -->
+                    <div id="search-results"
+                         class="mt-1 max-h-48 bg-white border border-gray-300 rounded-md shadow-lg overflow-y-auto px-2">
+                        <!-- Search results will be dynamically populated here -->
+                    </div>
+                </div>
+                <div class="flex-shrink-0">
+                    <div class="flex h-16 flex-col justify-center bg-white px-6">
+                        <div class="flex items-baseline space-x-3">
+                            <h2 class="text-lg font-medium text-gray-900">Inbox</h2>
+                            <p class="text-sm font-medium text-gray-500">{{ total_distinct_receivers }} messages</p>
+                        </div>
+                    </div>
+                </div>
+                <nav aria-label="Message list" class="min-h-0 flex-1 overflow-y-auto mt-5 bg-white px-2">
+                    <ul role="list" class="divide-y divide-gray-100 w-full lg:w-96">
+                        {% for message in inbox %}
+                            {% if message.receiver == user %}
+                                <li hx-get="{% url 'view_message_details' pk=message.sender.id %}"
+                                    class="relative flex justify-between gap-x-6 py-5">
+                                    <div class="flex min-w-0 gap-x-4">
+                                        <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                             src="{{ message.sender.profile_picture }}"
+                                             alt="">
+                                        <div class="min-w-0 flex-auto">
+                                            <p class="text-sm font-semibold leading-6 text-gray-900">
+                                                <a href="">
+                                                    <span class="absolute inset-x-0 -top-px bottom-0"></span>
+                                                    {{ message.sender.full_name }}
+                                                </a>
+                                            </p>
+                                            <div class="mt-1 flex text-xs leading-5 text-gray-500">
+                                                <p
+                                                        class="relative truncate">
+                                                    @{{ message.sender.username }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex shrink-0 items-center gap-x-4">
+                                        <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 20 20"
+                                             fill="currentColor" aria-hidden="true" data-slot="icon">
+                                            <path fill-rule="evenodd"
+                                                  d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+                                                  clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </li>
+                            {% else %}
+                                <li hx-get="{% url 'view_message_details' pk=message.receiver.id %}"
+                                    class="relative flex justify-between gap-x-6 py-5">
+                                    <div class="flex min-w-0 gap-x-4">
+                                        <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                             src="{{ message.receiver.profile_picture }}"
+                                             alt="">
+                                        <div class="min-w-0 flex-auto">
+                                            <p class="text-sm font-semibold leading-6 text-gray-900">
+                                                <a href="">
+                                                    <span class="absolute inset-x-0 -top-px bottom-0"></span>
+                                                    {{ message.receiver.full_name }}
+                                                </a>
+                                            </p>
+                                            <div class="mt-1 flex text-xs leading-5 text-gray-500">
+                                                <p
+                                                        class="relative truncate">
+                                                    @{{ message.receiver.username }}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="flex shrink-0 items-center gap-x-4">
+                                        <svg class="h-5 w-5 flex-none text-gray-400" viewBox="0 0 20 20"
+                                             fill="currentColor" aria-hidden="true" data-slot="icon">
+                                            <path fill-rule="evenodd"
+                                                  d="M8.22 5.22a.75.75 0 0 1 1.06 0l4.25 4.25a.75.75 0 0 1 0 1.06l-4.25 4.25a.75.75 0 0 1-1.06-1.06L11.94 10 8.22 6.28a.75.75 0 0 1 0-1.06Z"
+                                                  clip-rule="evenodd"/>
+                                        </svg>
+                                    </div>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </nav>
+            </div>
+        </aside>
+
+    </div>
+    <script>
+
+        function storeUserID(userID) {
+            localStorage.removeItem("userID")
+            localStorage.setItem("userID", userID)
+        }
+
+        // Preview image before sending
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const preview = document.getElementById('image-preview');
+                    const img = document.getElementById('preview-img');
+                    img.src = e.target.result;
+                    preview.classList.remove('hidden');
+                }
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Remove image preview
+        document.getElementById('remove-img').addEventListener('click', function () {
+            const preview = document.getElementById('image-preview');
+            const imgInput = document.getElementById('chat-message-file-upload');
+            imgInput.value = '';  // Clear the input value
+            preview.classList.add('hidden');
+        });
+
+        const otherUser = "{{ other_user.id }}";
+        const protocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+        const chatSocket = new WebSocket(
+            protocol + window.location.host + '/ws/chat/' + otherUser + '/'
+        );
+
+        chatSocket.onmessage = function (e) {
+            const data = JSON.parse(e.data);
+            const message = data.message;
+            const sender = data.sender;
+            const image_url = data.image_url;
+
+
+            const preview = document.getElementById('image-preview');
+            const imgInput = document.getElementById('chat-message-file-upload');
+            imgInput.value = '';  // Clear the input value
+            preview.classList.add('hidden');
+
+            const profile_picture = data.profile_picture;
+            const full_name = data.full_name;
+
+            // Append new messages to the chat log
+            const chatLog = document.querySelector('#chat-log');
+            const newMessage = document.createElement('div');
+            newMessage.classList.add('message', 'flex', 'mt-5');
+
+            // Check if the current user is the sender or receiver
+            if (sender === "{{ request.user.email }}") {
+                newMessage.classList.add('justify-end');
+            } else {
+                newMessage.classList.add('justify-start');
+            }
+
+            newMessage.innerHTML = `
+                <li class="flex">
+                    <div class="max-w-xs break-words
+                        ${sender === "{{ request.user.email }}" ? 'bg-blue-500 text-white' : 'bg-gray-100 text-gray-800'} px-4 py-2 rounded-lg shadow-sm">
+                        <p>${message}</p>
+                        ${image_url ? `<img src="${image_url}" alt="" class="h-full w-full object-cover object-center lg:h-full lg:w-full">` : ''}
+                        <span class="block text-xs text-gray-300 mt-1"><time>Just now</time></span>
+                    </div>
+                </li>
+            `;
+
+            chatLog.appendChild(newMessage);
+
+            // Scroll to the bottom of the chat after appending the new message
+            scrollToBottom();
+        };
+
+        chatSocket.onclose = function (e) {
+            console.error('Chat socket closed unexpectedly');
+        };
+
+        // Function to scroll the chat log to the bottom
+        function scrollToBottom() {
+            const chatLog = document.querySelector('#chat-log');
+            chatLog.scrollTop = chatLog.scrollHeight;
+        }
+
+        // Automatically scroll to the bottom when page loads after HTMX swap
+        scrollToBottom();
+
+        document.querySelector('#chat-message-submit').onclick = function () {
+            const messageInputDom = document.querySelector('#chat-message-input');
+            const fileUploadDom = document.querySelector('#chat-message-file-upload');
+            const message = messageInputDom.value;
+
+            // Handle file upload if any
+            const file = fileUploadDom.files[0];
+
+            if (file !== undefined) {
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    const fileData = event.target.result; // base64-encoded file data
+                    chatSocket.send(JSON.stringify({
+                        'message': message,
+                        'file': fileData, // Include the file data in the message
+                        'file_name': file.name,
+                        'file_type': file.type
+                    }));
+                };
+                reader.readAsDataURL(file); // Convert the file to base64 format
+            } else {
+                // Send the message without file if no file is uploaded
+                chatSocket.send(JSON.stringify({
+                    'message': message
+                }));
+            }
+
+            messageInputDom.value = '';
+            fileUploadDom.value = ''; // Reset the file input
+
+        };
+    </script>
+
+{% endblock %}

@@ -1,0 +1,14 @@
+version: "3.10"
+
+services:
+  app:
+    build:
+      context: .
+    volumes:
+      - .:/app
+    # Here we can override the CMD from the Dockerfile if necessary
+    entrypoint: ["/app/entrypoint.sh"]
+    # You can pass commands to the entrypoint, which will be executed
+    command: ["python", "your_app.py"]
+    ports:
+      - "8000:8000"

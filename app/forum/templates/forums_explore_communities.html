@@ -1,0 +1,140 @@
+{% extends "layout.html" %}
+
+{% block layout %}
+    <div>
+        <div class="bg-white relative px-4 sm:px-6 lg:px-8 py-5 rounded-md shadow">
+            <h1 class="mb-4 text-2xl sm:text-3xl font-extrabold text-gray-900">
+                Explore <span class="text-transparent bg-clip-text bg-gradient-to-r to-pink-600 from-pink-300">Communities</span>
+            </h1>
+            <button onclick="showAddNewCommunityModal()" type="button"
+                    id="createCommunityButton"
+                    class="mt-2 w-full sm:w-auto inline-flex justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                     stroke="currentColor"
+                     class="-ml-0.5 h-5 w-5 text-gray-400">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M12 4.5v15m7.5-7.5h-15"/>
+                </svg>
+                Create a new community
+            </button>
+
+            <div class="mt-5">
+                <input hx-get="{% url 'search_forums_service' %}" hx-trigger="keyup changed delay:0.1s"
+                       id="searchInput"
+                       hx-target="#search-results"
+                       hx-swap="innerHTML" autocomplete="off"
+                       class="block w-80 rounded-lg border-0 px-4 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                       placeholder="Search..." type="search" name="search">
+            </div>
+
+            <!-- Grid that adapts for mobile and larger screens -->
+            <div id="search-results">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-10">
+                    {% for community in communities %}
+                        <div class="relative flex items-center space-x-3 rounded-lg border border-gray-300 bg-white px-4 py-5 shadow hover:border-gray-400">
+                            <div class="flex-shrink-0">
+                        <span class="inline-flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-pink-500">
+                            <span class="text-lg sm:text-xl font-medium leading-none text-white">{{ community.initials }}</span>
+                        </span>
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <div class="focus:outline-none">
+                                    <div class="flex justify-between items-center">
+                                        <p class="text-sm sm:text-base font-semibold text-gray-900">{{ community.name }}</p>
+                                        <button hx-get="{% url 'join_community_service' slug=community.slug %}"
+                                                type="button"
+                                                class="cursor-pointer rounded-full bg-pink-500 px-3 py-1 text-xs sm:text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-pink-600 hover:bg-pink-600 joinButton">
+                                            Join
+                                        </button>
+                                    </div>
+                                    <p class="text-xs font-medium text-gray-800">{{ community.total_members }}
+                                        {% if community.total_members <= 1 %}
+                                            member
+                                        {% else %}
+                                            members
+                                        {% endif %}
+                                    </p>
+                                    <p class="truncate text-sm text-gray-500">{{ community.description }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Modal -->
+        <div id="addNewCommunityModal" class="hidden relative z-10" aria-labelledby="modal-title" role="dialog"
+             aria-modal="true">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                        <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                            <button onclick="showAddNewCommunityModal()" type="button"
+                                    class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
+                                <span class="sr-only">Close</span>
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                     stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">New Community</h3>
+                        <p class="text-xs text-gray-500">Note: You will be automatically joined to the community after creating it.</p>
+                        <hr>
+                        <div class="mt-5">
+                            <form hx-post="{% url 'add_new_community_service' %}" method="POST">
+                                {% csrf_token %}
+                                <div>
+                                    <label for="title" class="block text-sm font-semibold text-gray-900">Name</label>
+                                    <div class="mt-2">
+                                        <input name="title" id="title" required
+                                               class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                                               placeholder="Add community name here..."/>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5">
+                                    <label for="description" class="block text-sm font-semibold text-gray-900">Description</label>
+                                    <div class="mt-2">
+                                    <textarea rows="4" name="description" id="description" required
+                                              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse gap-x-1">
+                                    <button type="submit"
+                                            class="mt-3 inline-flex w-full sm:w-auto justify-center rounded-md bg-pink-500 text-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-pink-300 hover:bg-pink-600">
+                                        Post
+                                    </button>
+                                    <button onclick="showAddNewCommunityModal()" type="button"
+                                            class="mt-3 inline-flex w-full sm:w-auto justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>       
+        function showAddNewCommunityModal() {
+            const addNewCommunityModal = document.getElementById("addNewCommunityModal")
+            if (addNewCommunityModal) {
+                if (addNewCommunityModal.classList.contains('hidden')) {
+                    addNewCommunityModal.classList.remove('hidden')
+                } else {
+                    addNewCommunityModal.classList.add('hidden')
+                }
+            } else {
+                console.log('addNewCommunityModal element not found.');
+            }
+        }
+    </script>
+{% endblock %}

@@ -1,0 +1,245 @@
+{% extends "layout.html" %}
+{% load humanize %}
+{% block layout %}
+    <div>
+        <div class="bg-white relative px-4 sm:px-6 lg:px-8 py-5 rounded-md shadow">
+            <div class="max-w-7xl mx-auto bg-white rounded-md  my-4">
+
+                <div class="flex items-center">
+                    <div class="p-4 w-full">
+
+                        <a href="/forums/community/{{ topic.community.slug }}" class="flex gap-x-1 text-gray-500 text-sm hover:text-gray-600 cursor-pointer">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" class="size-5 text-gray-500">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"/>
+                            </svg>
+                            Back
+                        </a>
+                        <!-- Title and metadata -->
+                        <div class="my-2">
+                            <a href="#" class="group block flex-shrink-0">
+                                <div class="flex items-center">
+                                    <div class="rounded-full bg-pink-100 p-2">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                                             class="size-5 text-pink-500">
+                                            <path d="M3.505 2.365A41.369 41.369 0 0 1 9 2c1.863 0 3.697.124 5.495.365 1.247.167 2.18 1.108 2.435 2.268a4.45 4.45 0 0 0-.577-.069 43.141 43.141 0 0 0-4.706 0C9.229 4.696 7.5 6.727 7.5 8.998v2.24c0 1.413.67 2.735 1.76 3.562l-2.98 2.98A.75.75 0 0 1 5 17.25v-3.443c-.501-.048-1-.106-1.495-.172C2.033 13.438 1 12.162 1 10.72V5.28c0-1.441 1.033-2.717 2.505-2.914Z"/>
+                                            <path d="M14 6c-.762 0-1.52.02-2.271.062C10.157 6.148 9 7.472 9 8.998v2.24c0 1.519 1.147 2.839 2.71 2.935.214.013.428.024.642.034.2.009.385.09.518.224l2.35 2.35a.75.75 0 0 0 1.28-.531v-2.07c1.453-.195 2.5-1.463 2.5-2.915V8.998c0-1.526-1.157-2.85-2.729-2.936A41.645 41.645 0 0 0 14 6Z"/>
+                                        </svg>
+                                    </div>
+                                    <div class="ml-3">
+                                        <p class="text-sm font-semibold text-gray-700 group-hover:text-gray-900">{{ topic.community.name }}</p>
+                                        <p class="text-xs font-medium text-gray-500 group-hover:text-gray-700">
+                                            {{ topic.author.full_name }} • {{ topic.created_at|naturaltime }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <h2 class="text-xl font-semibold text-gray-800 mt-3">
+                                {{ topic.title }}
+                            </h2>
+                        </div>
+                        <hr>
+                        <!-- Post text content -->
+                        <p class="text-gray-700 mb-4 text-sm mt-5 break-all">
+                            {{ topic.body }}
+                        </p>
+
+                        <!-- Action buttons -->
+                        <div class="flex space-x-4 text-sm text-gray-500 mt-10">
+                            <button class="flex items-center hover:bg-gray-100 px-2 py-1 rounded">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none"
+                                     viewBox="0 0 24 24"
+                                     stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                </svg>
+                                <span class="flex gap-x-1">
+                                    {{ comments_count }}
+                                    <p>
+                                        {% if comments_count == 1 %}
+                                            Comment
+                                        {% else %}
+                                            Comments
+                                        {% endif %}
+                                    </p>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="relative">
+                    <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                        <div class="w-full border-t border-gray-300"></div>
+                    </div>
+                    <div class="relative flex justify-center">
+                        <span class="bg-white px-2 text-sm text-gray-500"></span>
+                    </div>
+                </div>
+
+                <div class="flex items-start space-x-4 sm:px-6 lg:px-5 mt-5">
+                    <div class="flex-shrink-0">
+                        <img class="inline-block h-10 w-10 rounded-full"
+                             src="{{ user.profile_picture }}"
+                             alt="">
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <form hx-post="{% url 'add_comment_service' slug=slug %}" class="relative">
+                            {% csrf_token %}
+                            <div class="overflow-hidden rounded-lg shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-1 focus-within:ring-pink-400">
+                                <label for="comment" class="sr-only">Add your comment</label>
+                                <textarea name="comment" id="comment"
+                                          class="block w-full resize-none border-0 bg-transparent py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                                          placeholder="Add your comment..." required></textarea>
+
+                                <!-- Spacer element to match the height of the toolbar -->
+                                <div class="py-2" aria-hidden="true">
+                                    <!-- Matches height of button in toolbar (1px border + 36px content height) -->
+                                    <div class="py-px">
+                                        <div class="h-9"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="absolute inset-x-0 bottom-0 flex justify-between py-2 pl-3 pr-2">
+                                <div class="flex items-center space-x-5">
+                                    <div class="flex items-center">
+                                    </div>
+                                    <div class="flex items-center">
+
+                                    </div>
+                                </div>
+                                <div class="flex-shrink-0">
+                                    <button type="submit"
+                                            class="inline-flex items-center rounded-md bg-pink-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                                        Comment
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <!--Comment Section-->
+                <div>
+                    {% for comment in comments %}
+                        <!-- Comment -->
+                        <div class="bg-white shadow rounded-lg p-4 mt-5">
+                            <!-- Comment Header -->
+                            <div class="flex items-start space-x-4">
+                                <img class="w-10 h-10 rounded-full" src="{{ comment.comment_by_prof_pic }}"
+                                     alt="User avatar">
+                                <div>
+                                    <div class="text-sm">
+                                        <span class="font-semibold">{{ comment.comment_by }}</span>
+                                        <span class="text-gray-500 text-xs">• {{ comment.created_at }}</span>
+                                    </div>
+
+                                    <p class="mt-3 text-gray-800 text-sm">{{ comment.comment }}</p>
+                                </div>
+                            </div>
+                            <!-- Comment Footer -->
+                            <div class="flex items-center space-x-4 mt-3">
+                                            <span class="flex gap-x-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"
+                                                     fill="currentColor"
+                                                     class="size-4 text-gray-500 mt-0.5">
+                                                  <path fill-rule="evenodd"
+                                                        d="M1 8.74c0 .983.713 1.825 1.69 1.943.904.108 1.817.19 2.737.243.363.02.688.231.85.556l1.052 2.103a.75.75 0 0 0 1.342 0l1.052-2.103c.162-.325.487-.535.85-.556.92-.053 1.833-.134 2.738-.243.976-.118 1.689-.96 1.689-1.942V4.259c0-.982-.713-1.824-1.69-1.942a44.45 44.45 0 0 0-10.62 0C1.712 2.435 1 3.277 1 4.26v4.482Zm3-3.49a.75.75 0 0 1 .75-.75h6.5a.75.75 0 0 1 0 1.5h-6.5A.75.75 0 0 1 4 5.25ZM4.75 7a.75.75 0 0 0 0 1.5h2.5a.75.75 0 0 0 0-1.5h-2.5Z"
+                                                        clip-rule="evenodd"/>
+                                                </svg>
+
+                                                <p class="text-xs">{{ comment.replies|length }}</p>
+                                                <p class="text-xs">
+                                                    {% if comment.replies|length <= 1 %}
+                                                        reply
+                                                    {% else %}
+                                                        replies
+                                                    {% endif %}
+                                                </p>
+                                            </span>
+                                <button onclick="showReplyForm(`{{ comment.id }}`)"
+                                        class="text-gray-500 hover:text-gray-700 text-xs hover:text-pink-500">Reply
+                                </button>
+                            </div>
+                        </div>
+
+                        <!--Reply to comment-->
+
+                        <div id="{{ comment.id }}" class="hidden mt-6 flex gap-x-3 ml-16">
+                            <img src="{{ user.profile_picture }}"
+                                 alt="" class="h-6 w-6 flex-none rounded-full bg-gray-50">
+                            <form hx-post="{% url 'add_reply_to_comment_service' slug=slug comment_id=comment.id %}"
+                                  class="relative flex-auto">
+                                <div class="overflow-hidden rounded-lg pb-12 shadow-sm ring-1 ring-inset ring-gray-300 focus-within:ring-1 focus-within:ring-pink-400">
+                                    <label for="reply" class="sr-only">Add your reply</label>
+                                    <textarea rows="2" name="reply" id="reply"
+                                              class="block w-full resize-none border-0 bg-transparent py-1.5 text-gray-900 placeholder:text-gray-400 focus:ring-0 sm:text-sm sm:leading-6"
+                                              placeholder="Add your reply..." required></textarea>
+                                </div>
+
+                                <div class="absolute inset-x-0 bottom-0 flex justify-between py-2 pl-3 pr-2">
+                                    <div class="flex items-center space-x-5">
+
+                                    </div>
+                                    <button type="submit"
+                                            class="rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                        Reply
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <ul role="list" class="space-y-6 ml-8 lg:ml-16">
+                            {% for reply in comment.replies %}
+                                <li class="relative flex gap-x-4 mt-5">
+                                    <!-- Vertical line, shown only if it's not the last item -->
+                                    {% if not forloop.last %}
+                                        <div class="absolute -bottom-6 left-0 top-0 flex w-6 justify-center">
+                                            <div class="w-px bg-gray-200"></div>
+                                        </div>
+                                    {% endif %}
+
+                                    <img
+                                            src="{{ reply.reply_by_prof_pic }}"
+                                            alt="User avatar"
+                                            class="relative mt-3 h-6 w-6 flex-none rounded-full bg-gray-50"
+                                    >
+
+                                    <div class="flex-auto rounded-md p-3 ring-1 ring-inset ring-gray-200">
+                                        <div class="flex justify-between gap-x-4">
+                                            <div class="py-0.5 text-xs leading-5 text-gray-500">
+                                                <span class="font-semibold text-gray-900">{{ reply.reply_by }}</span>
+                                                replied
+                                                <span class="text-gray-500 text-xs">• {{ reply.created_at }}</span>
+                                            </div>
+                                        </div>
+                                        <p class="text-sm leading-6 text-gray-500">
+                                            {{ reply.reply }}
+                                        </p>
+                                    </div>
+                                </li>
+                            {% endfor %}
+                        </ul>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showReplyForm(form_id) {
+            const replyFormId = document.getElementById(form_id)
+            if (replyFormId) {
+                if (replyFormId.classList.contains('hidden')) {
+                    replyFormId.classList.remove('hidden')
+                } else {
+                    replyFormId.classList.add('hidden')
+                }
+            } else {
+                console.log('replyFormId element not found.');
+            }
+        }
+    </script>
+{% endblock %}

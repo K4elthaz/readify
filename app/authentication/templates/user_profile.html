@@ -1,0 +1,496 @@
+{% extends 'layout.html' %}
+{% load humanize %}
+{% load tailwind_filters %}
+{% load total_reader %}
+
+{% block layout %}
+    <div class="bg-white shadow rounded-lg">
+        <div>
+            <div>
+                <img class="h-32 w-full object-cover lg:h-48"
+                     src="https://images.unsplash.com/photo-1444628838545-ac4016a5418a?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80"
+                     alt="">
+            </div>
+            <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+                <div class="-mt-12 sm:-mt-16 sm:flex sm:items-end sm:space-x-5">
+                    <div class="flex">
+                        <img class="h-24 w-24 rounded-full ring-4 ring-white sm:h-32 sm:w-32"
+                             src="{{ user_profile.profile_picture }}"
+                             alt="">
+                    </div>
+                    <div class="mt-6 sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
+                        <div class="mt-6 min-w-0 flex-1 sm:hidden md:block">
+                            <h1 class="truncate text-2xl font-bold text-gray-900">{{ user_profile.full_name }}</h1>
+                            {% if user_profile.user_role == "writer" and i_followed %}
+                                <button hx-get="{% url 'unfollow_service' id=user_profile.id %}" type="button"
+                                        class="cursor-pointer rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                    Unfollow
+                                </button>
+                            {% elif user_profile.user_role == "writer" and not i_followed  %}
+                                <button hx-post="{% url 'follow_author_service_v2' author_id=user_profile.id %}" type="button"
+                                        class="flex items-center gap-x-1 rounded-full bg-pink-600 px-3 py-1 text-xs font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                         stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="M12 4.5v15m7.5-7.5h-15"/>
+                                    </svg>
+                                    Follow
+                                </button>
+                            {% endif %}
+                        </div>
+                        <div class="mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 hidden min-w-0 flex-1 sm:block md:hidden">
+                    <h1 class="truncate text-2xl font-bold text-gray-900">{{ user_profile.full_name }}</h1>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="mx-auto max-w-5xl sm:px-6 lg:px-8 my-10">
+            <div class="mb-4 border-b border-gray-200 ">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center" id="default-tab"
+                    data-tabs-toggle="#default-tab-content" role="tablist">
+                    <li class="me-2" role="presentation">
+                        <button class="inline-block p-4 border-b-2 rounded-t-lg" id="profile-tab"
+                                data-tabs-target="#profile" type="button" role="tab" aria-controls="profile"
+                                aria-selected="false">Profile
+                        </button>
+                    </li>
+                    <li class="me-2" role="presentation">
+                        {% if user_profile.user_role == 'reader' %}
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                                    id="following-tab" data-tabs-target="#following" type="button" role="tab"
+                                    aria-controls="following" aria-selected="false">({{ num_followed_authors }})
+                                Following
+                            </button>
+                        {% else %}
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                                    id="followers-tab" data-tabs-target="#followers" type="button" role="tab"
+                                    aria-controls="followers" aria-selected="false">({{ num_followers }}) Followers
+                            </button>
+                        {% endif %}
+                    </li>
+                    {% if user_profile.user_role == 'reader' %}
+                        <li class="me-2" role="presentation">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                                    id="my_posts-tab" data-tabs-target="#my_posts" type="button" role="tab"
+                                    aria-controls="settings" aria-selected="false">My Posts
+                            </button>
+                        </li>
+                    {% endif %}
+                    {% if user.id == user_profile.id %}
+                        <li role="presentation">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                                    id="settings-tab" data-tabs-target="#settings" type="button" role="tab"
+                                    aria-controls="settings" aria-selected="false">Settings
+                            </button>
+                        </li>
+                    {% endif %}
+                    {% if user.id != user_profile.id %}
+                        <li role="presentation">
+                            <button class="inline-block p-4 border-b-2 rounded-t-lg hover:text-gray-600 hover:border-gray-300"
+                                    id="published-tab" data-tabs-target="#published" type="button" role="tab"
+                                    aria-controls="published" aria-selected="false">Published Books
+                            </button>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+            <div id="default-tab-content">
+                <div class="hidden p-4 rounded-lg bg-gray-50" id="profile" role="tabpanel"
+                     aria-labelledby="profile-tab">
+                    <div class="px-4 sm:px-0">
+                        <div class="flex gap-x-1">
+                            <h3 class="text-base font-semibold leading-7 text-gray-900">Basic Information</h3>
+                            {% if user.id == user_profile.id %}
+                                <button onclick="showUpdateProfileForm()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                         stroke-width="1.5" stroke="currentColor" class="size-3.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                              d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"/>
+                                    </svg>
+                                </button>
+                            {% endif %}
+                        </div>
+
+                        <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Personal details and information.</p>
+                    </div>
+                    <div class="mt-6 border-t border-gray-100" id="userProfileInfo">
+                        <dl class="divide-y divide-gray-100">
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Full name</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ user_profile.full_name }}</dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Username</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0"><span
+                                        class="font-bold text-pink-500">@</span>{{ user_profile.username }}</dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Email address</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">{{ user_profile.email }}</dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Date joined</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    {{ user_profile.date_joined }}
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Gender</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    {{ user_profile.gender }}
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Birthday</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    {{ user_profile.birthday }}
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Age</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                                    {{ user_profile.age }} yrs. old
+                                </dd>
+                            </div>
+                            <div class="px-4 py-6 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-0">
+                                <dt class="text-sm font-medium leading-6 text-gray-900">Role</dt>
+                                <dd class="mt-1 text-sm leading-6 text-gray-700 sm:col-span-2 sm:mt-0">
+                            <span class="inline-flex items-center gap-x-1.5 rounded-full px-2 py-1 text-xs font-medium text-gray-900 ring-1 ring-inset ring-gray-200">
+                              <svg class="h-1.5 w-1.5 fill-pink-500" viewBox="0 0 6 6" aria-hidden="true">
+                                <circle cx="3" cy="3" r="3"/>
+                              </svg>
+                              {{ user_profile.user_role }}
+                            </span>
+                                </dd>
+                            </div>
+
+                        </dl>
+                    </div>
+                    <div id="message"></div>
+                    <div class="hidden mt-5" id="userProfileInfoUpdate">
+                        <p class="my-2 max-w-2xl font-semibold text-sm leading-6 text-gray-800">Update your personal
+                            information</p>
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{ form|crispy }}
+                            <button hx-post="{% url 'update_user_profile' %}" type="submit"
+                                    class="rounded-md bg-pink-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                                Update
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                <div class="hidden p-4 rounded-lg bg-gray-50" id="following" role="tabpanel"
+                     aria-labelledby="following-tab">
+                    <div class="px-4 sm:px-0">
+                        <div class="flex gap-x-1">
+                            <h3 class="text-base font-semibold leading-7 text-gray-900">Following</h3>
+                        </div>
+
+                        <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of authors your follow</p>
+                    </div>
+                    <ul role="list"
+                        class="divide-y divide-gray-100 overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+                        {% for author in followed_authors %}
+                            <li class="flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6 relative">
+                                <div class="flex min-w-0 gap-x-4">
+                                    <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                         src="{{ author.author.profile_picture }}"
+                                         alt="">
+                                    <div class="min-w-0 flex-auto">
+                                        <p class="text-sm font-semibold leading-6 text-gray-900">
+                                            {{ author.author.full_name }}
+                                        </p>
+                                        <p class="mt-1 flex text-xs leading-5 text-gray-500">
+                                            @{{ author.author.username }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex shrink-0 items-center gap-x-4">
+                                    <button hx-get="{% url 'unfollow_service' id=author.id %}" type="button"
+                                            class="cursor-pointer rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                        Unfollow
+                                    </button>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                </div>
+                <div class="hidden p-4 rounded-lg bg-gray-50" id="followers" role="tabpanel"
+                     aria-labelledby="followers-tab">
+                    <div class="px-4 sm:px-0">
+                        <div class="flex gap-x-1">
+                            {% if user.id == user_profile.id %}
+                                <h3 class="text-base font-semibold leading-7 text-gray-900">Your Followers</h3>
+                            {% else %}
+                                <h3 class="text-base font-semibold leading-7 text-gray-900">Followers</h3>
+                            {% endif %}
+                        </div>
+
+
+                        {% if user.id == user_profile.id %}
+                            <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Explore the list of individuals
+                                who
+                                are following you.</p>
+                        {% else %}
+                            <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">Explore the list of individuals
+                                who
+                                are following {{ user_profile.full_name }}.</p>
+                        {% endif %}
+                    </div>
+                    <ul role="list"
+                        class="divide-y divide-gray-100 overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+                        {% for follower in followers %}
+                            <li class="flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6 relative">
+                                <div class="flex min-w-0 gap-x-4">
+                                    <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                         src="{{ follower.user.profile_picture }}"
+                                         alt="">
+                                    <div class="min-w-0 flex-auto">
+                                        <p class="text-sm font-semibold leading-6 text-gray-900">
+                                            {{ follower.user.full_name }}
+                                        </p>
+                                        <p class="mt-1 flex text-xs leading-5 text-gray-500">
+                                            @{{ follower.user.username }}
+                                        </p>
+                                    </div>
+                                </div>
+                                {#                                <div class="flex shrink-0 items-center gap-x-4">#}
+                                {#                                    <button hx-get="{% url 'unfollow_service' id=author.id %}" type="button"#}
+                                {#                                            class="cursor-pointer rounded bg-white px-2 py-1 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">#}
+                                {#                                        Unfollow#}
+                                {#                                    </button>#}
+                                {#                                </div>#}
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                </div>
+                <div class="hidden p-4 rounded-lg bg-gray-50 " id="my_posts" role="tabpanel"
+                     aria-labelledby="my_posts-tab">
+                    <div class="px-4 sm:px-0">
+                        <div class="flex gap-x-1">
+                            <h3 class="text-base font-semibold leading-7 text-gray-900">Social Posts</h3>
+                        </div>
+
+                        <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of your posts in social
+                            newsfeed</p>
+                    </div>
+                    <div class="bg-white shadow sm:rounded-lg">
+                        <!-- Loop through the list of posts -->
+                        {% for post in social_posts %}
+                            <div class="py-10 px-3 border-b border-gray-200">
+                                <div class="flex items-start space-x-4">
+                                    <!-- User profile picture -->
+                                    <div class="flex-shrink-0">
+                                        <img class="h-10 w-10 rounded-full" src="{{ post.author.profile_picture }}"
+                                             alt="Profile picture">
+                                    </div>
+                                    <div class="flex-1 min-w-0">
+                                        <!-- Post user and timestamp -->
+                                        <div class="text-sm">
+                                            <span class="font-semibold text-gray-900">@{{ post.author.username }}</span>
+                                            <span class="text-gray-500">• {{ post.created_at|naturaltime }}</span>
+                                            <button hx-get="{% url 'delete_social_post_service' id=post.id %}"
+                                                    type="button" class="text-sm inline-flex items-center space-x-1">
+                                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"
+                                                     fill="currentColor" class="size-4 text-red-500">
+                                                    <path fill-rule="evenodd"
+                                                          d="M8.75 1A2.75 2.75 0 0 0 6 3.75v.443c-.795.077-1.584.176-2.365.298a.75.75 0 1 0 .23 1.482l.149-.022.841 10.518A2.75 2.75 0 0 0 7.596 19h4.807a2.75 2.75 0 0 0 2.742-2.53l.841-10.52.149.023a.75.75 0 0 0 .23-1.482A41.03 41.03 0 0 0 14 4.193V3.75A2.75 2.75 0 0 0 11.25 1h-2.5ZM10 4c.84 0 1.673.025 2.5.075V3.75c0-.69-.56-1.25-1.25-1.25h-2.5c-.69 0-1.25.56-1.25 1.25v.325C8.327 4.025 9.16 4 10 4ZM8.58 7.72a.75.75 0 0 0-1.5.06l.3 7.5a.75.75 0 1 0 1.5-.06l-.3-7.5Zm4.34.06a.75.75 0 1 0-1.5-.06l-.3 7.5a.75.75 0 1 0 1.5.06l.3-7.5Z"
+                                                          clip-rule="evenodd"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <!-- Post content -->
+                                        <p class="mt-1 text-gray-700 text-sm">
+                                            {{ post.caption }}
+                                        </p>
+
+                                        <!-- If post has media (images/videos) -->
+                                        {% if post.media|length >= 1 %}
+                                            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                                                <!-- Loop through attached media files -->
+                                                {% for media_file in post.media %}
+                                                    <div class="w-full">
+                                                        {% if media_file.resource_type == 'image' %}
+                                                            <img src="{{ media_file.url }}" alt="Image"
+                                                                 class="rounded-lg object-cover w-full h-40">
+                                                        {% elif media_file.resource_type == 'video' %}
+                                                            <video controls class="rounded-lg w-full h-40">
+                                                                <source src="{{ media_file.url }}" type="video/mp4">
+                                                                Your browser does not support the video tag.
+                                                            </video>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+
+                                        <!-- Post interactions (likes, comments) -->
+                                        <div class="mt-3 flex items-center space-x-4 text-gray-500 text-sm">
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="hidden p-4 rounded-lg bg-gray-50" id="settings" role="tabpanel"
+                     aria-labelledby="settings-tab">
+                    <div class="px-4 sm:px-0">
+                        <div class="flex gap-x-1">
+                            <h3 class="text-base font-semibold leading-7 text-gray-900">Password Settings</h3>
+                        </div>
+
+                        <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">
+                            You can update your password here
+                        </p>
+                    </div>
+                    <div id="errorMessage"></div>
+                    <form hx-post="{% url 'change_password' %}" hx-target="#errorMessage" class="my-5 space-y-4">
+
+                        <div>
+                            <label for="current_password" class="block text-sm font-semibold leading-6 text-gray-900">Current
+                                Password</label>
+                            <p class="flex flex-col sm:flex-row gap-x-2 text-xs text-gray-500 font-medium">
+                                If you're using Google account to sign-in. Enter any password here to continue.
+                            </p>
+                            <p class=" text-xs text-gray-500 font-medium mt-2">
+                                <span class="text-red-600 font-semibold">*Note:</span>
+                                This will only work if you haven't set your password yet.
+                            </p>
+                            <div class="mt-2">
+                                <input type="password" name="current_password" id="current_password" required
+                                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                                >
+                            </div>
+                        </div>
+                        <div>
+                            <label for="new_password" class="block text-sm font-semibold leading-6 text-gray-900">New
+                                Password</label>
+                            <div class="mt-2">
+                                <input type="password" name="new_password" id="new_password" required
+                                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                                >
+                            </div>
+                        </div>
+                        <div>
+                            <label for="confirm_password" class="block text-sm font-semibold leading-6 text-gray-900">Confirm
+                                Password</label>
+                            <div class="mt-2">
+                                <input type="password" name="confirm_password" id="confirm_password" required
+                                       class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                                >
+                            </div>
+                        </div>
+
+                        <div class="flex items-start mt-7">
+                            <div class="flex h-5 items-center">
+                                <input id="show_password" name="show_password" type="checkbox"
+                                       onclick="togglePassword()"
+                                       class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-600">
+                            </div>
+                            <div class="ml-2 text-sm">
+                                <label for="show_password" class="font-medium text-gray-900">Show passwords</label>
+                            </div>
+                        </div>
+                        <button type="submit"
+                                class="rounded-md bg-pink-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                            Update
+                        </button>
+                    </form>
+                </div>
+                {% if user.id != user_profile.id %}
+                    <div class="hidden p-4 rounded-lg bg-gray-50" id="published" role="tabpanel"
+                         aria-labelledby="following-tab">
+                        <div class="px-4 sm:px-0">
+                            <div class="flex gap-x-1">
+                                <h3 class="text-base font-semibold leading-7 text-gray-900">Published Books</h3>
+                            </div>
+
+                            <p class="mt-1 max-w-2xl text-sm leading-6 text-gray-500">List of published books</p>
+                        </div>
+                        <ul role="list"
+                            class="divide-y divide-gray-100 overflow-hidden bg-white shadow-sm ring-1 ring-gray-900/5 sm:rounded-xl">
+                            {% for published in published_books %}
+                                <a href="/book/detail/{{ published.slug }}">
+                                    <li class="flex justify-between gap-x-6 px-4 py-5 hover:bg-gray-50 sm:px-6 relative">
+                                        <div class="flex min-w-0 gap-x-4">
+                                            <img class="h-12 w-12 flex-none rounded-full bg-gray-50"
+                                                 src="{{ published.cover_photo }}"
+                                                 alt="">
+                                            <div class="min-w-0 flex-auto">
+                                                <p class="text-sm font-semibold leading-6 text-gray-900">
+                                                    {{ published.title }}
+                                                </p>
+                                                <p class="text-xs flex gap-x-1 font-semibold leading-6 text-gray-700">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                         viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                                                         class="size-3.5 my-1">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z"/>
+                                                    </svg>
+                                                    {{ published.id|total_reader }}
+                                                </p>
+                                                <p class="mt-1 flex text-xs leading-5 text-gray-500">
+                                                    {{ published.description }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="flex shrink-0 items-center gap-x-4">
+                                        </div>
+                                    </li>
+                                </a>
+                            {% endfor %}
+                        </ul>
+
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showUpdateProfileForm() {
+            const userProfileInfo = document.getElementById("userProfileInfo")
+            const userProfileInfoUpdate = document.getElementById("userProfileInfoUpdate")
+            if (userProfileInfo || userProfileInfoUpdate) {
+                if (userProfileInfo.classList.contains('hidden')) {
+                    userProfileInfo.classList.remove('hidden')
+                    userProfileInfoUpdate.classList.add('hidden')
+                } else {
+                    userProfileInfo.classList.add('hidden')
+                    userProfileInfoUpdate.classList.remove('hidden')
+                }
+            } else {
+                console.log('userProfileInfo element not found.');
+            }
+        }
+
+        function togglePassword() {
+            const current_password = document.getElementById('current_password');
+            const new_password = document.getElementById('new_password');
+            const confirm_password = document.getElementById('confirm_password');
+            const showPasswordCheckbox = document.getElementById('show_password');
+
+            // Toggle the type attribute between 'password' and 'text'
+            if (showPasswordCheckbox.checked) {
+                current_password.type = 'text';
+                new_password.type = 'text';
+                confirm_password.type = 'text';
+            } else {
+                current_password.type = 'password';
+                new_password.type = 'password';
+                confirm_password.type = 'password';
+            }
+        }
+    </script>
+{% endblock %}

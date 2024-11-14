@@ -1,0 +1,116 @@
+{% extends "unfold/layouts/base.html" %}
+
+{% block content %}
+    <div class="container">
+        <!-- Age Analytics Section -->
+        <div class="border-b border-gray-200 px-4 py-5 sm:px-6">
+            <h3 class="text-xl font-semibold text-gray-200">User Age Analytics</h3>
+            <p class="mt-2 text-sm text-gray-200">This chart displays the age distribution of users, helping to
+                understand the demographics of your audience.</p>
+        </div>
+        <canvas id="ageChart" class="mt-4"></canvas>
+
+        <!-- Preference Analytics Section -->
+        <div class="border-b border-gray-200 px-4 py-5 sm:px-6 mt-10">
+            <h3 class="text-xl font-semibold text-gray-200">User Book Preference Analytics</h3>
+            <p class="mt-2 text-sm text-gray-200">This pie chart illustrates the distribution of user preferences for
+                various book genres, offering insights into popular reading choices.</p>
+        </div>
+        <div class="flex justify-center" style="height:100vh; width:auto">
+            <canvas id="preferenceChart" class="mt-4"></canvas>
+
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        // Prepare the data for age analytics chart
+        const ageAnalytics = {{ age_analytics|safe }};
+        const ageLabels = ageAnalytics.map(item => item.age);
+        const ageCounts = ageAnalytics.map(item => item.user_count);
+
+        // Prepare the data for book preferences chart
+        const preferenceCounter = {{ preference_counter|safe }};
+        const preferenceLabels = preferenceCounter.map(item => item.preference);
+        const preferenceCounts = preferenceCounter.map(item => item.total_preferred);
+
+        // Age Chart
+        const ageCtx = document.getElementById('ageChart').getContext('2d');
+        new Chart(ageCtx, {
+            type: 'bar',
+            data: {
+                labels: ageLabels,
+                datasets: [{
+                    label: 'Users by Age',
+                    data: ageCounts,
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // Book Preference Chart
+        const preferenceCtx = document.getElementById('preferenceChart').getContext('2d');
+        new Chart(preferenceCtx, {
+            type: 'pie',
+            data: {
+                labels: preferenceLabels,
+                datasets: [{
+                    label: 'Book Preferences',
+                    data: preferenceCounts,
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function (tooltipItem) {
+                                return tooltipItem.label + ': ' + tooltipItem.raw + ' users';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+    </script>
+{% endblock %}

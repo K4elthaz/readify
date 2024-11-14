@@ -1,0 +1,193 @@
+{% extends "layout.html" %}
+{% load humanize %}
+{% block layout %}
+    <div>
+        <div class="bg-white relative px-4 sm:px-6 lg:px-8 py-5 rounded-md shadow">
+            <main class="relative z-0 flex-1 overflow-y-auto focus:outline-none xl:order-last">
+                <article>
+                    <!-- Profile header -->
+                    <div>
+                        <div>
+                            <div class="h-24 w-full object-cover bg-gray-200"></div>
+                        </div>
+                        <div class="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+                            <div class="-mt-12 sm:-mt-16 sm:flex sm:items-end sm:space-x-5">
+                                <div class="flex">
+                                <span class="inline-flex h-24 w-24 rounded-full ring-4 ring-white sm:h-32 sm:w-32 items-center justify-center rounded-full bg-pink-500">
+                                    <span class="text-4xl sm:text-6xl font-medium leading-none text-white">{{ initials }}</span>
+                                </span>
+                                </div>
+                                <div class="mt-4 sm:mt-6 sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
+                                    <div class="mt-4 min-w-0 flex-1 sm:hidden 2xl:block">
+                                        <h1 class="truncate text-xl sm:text-2xl font-bold text-gray-900">{{ community.name }}</h1>
+                                    </div>
+                                    <div class="mt-4 sm:mt-6 flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-x-4 sm:space-y-0">
+                                        <button onclick="showAddNewPostModal()" type="button"
+                                                class="inline-flex justify-center gap-x-1.5 rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                 stroke-width="1.5" stroke="currentColor"
+                                                 class="-ml-0.5 h-5 w-5 text-gray-400">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M12 4.5v15m7.5-7.5h-15"/>
+                                            </svg>
+                                            Create a post
+                                        </button>
+                                        {% if not is_already_joined %}
+                                            <button type="button"
+                                                    class="inline-flex justify-center gap-x-1.5 rounded-md bg-pink-600 px-5 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-pink-300 hover:bg-pink-700">
+                                                Join
+                                            </button>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-4 sm:mt-6 hidden min-w-0 flex-1 sm:block 2xl:hidden">
+                                <h1 class="truncate text-xl sm:text-2xl font-bold text-gray-900">{{ community.name }}</h1>
+                            </div>
+                        </div>
+                    </div>
+                </article>
+            </main>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 px-5 mt-10">
+                <div class="col-span-2">
+                    <!-- Main area -->
+                    {% for topic in community.community_topic.all %}
+                        <div class="max-w-7xl mx-auto bg-white rounded-md border border-pink-200 my-4">
+                            <!-- Vote buttons and score -->
+                            <a hx-get="{% url 'topic_detail' slug=topic.slug %}" hx-push-url="true"
+                               hx-target="body"
+                               method="get" class="flex items-center">
+                                <!-- Post content -->
+                                <div class="p-5 w-full">
+                                    <!-- Title and metadata -->
+                                    <div class="mb-2">
+                                        <h2 class="text-base font-semibold text-gray-800 hover:text-blue-500 cursor-pointer">
+                                            {{ topic.title }}
+                                        </h2>
+                                        <p class="text-xs text-gray-500">
+                                            Posted by <span
+                                                class="hover:underline cursor-pointer">{{ topic.author.full_name }} - </span>
+                                            {{ topic.created_at|naturaltime }}
+                                        </p>
+                                    </div>
+                                    <!-- Post text content -->
+                                    <p class="text-gray-700 mb-4 text-sm break-all">
+                                        {{ topic.body }}
+                                    </p>
+                                    <!-- Action buttons -->
+                                    <div class="flex space-x-4 text-sm text-gray-500">
+                                        <button class="flex items-center hover:bg-gray-100 px-2 py-1 rounded">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none"
+                                                 viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                      d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/>
+                                            </svg>
+                                            {{ topic.total_comments }} {% if topic.total_comments <= 1 %}
+                                            Comment {% else %}
+                                            Comments {% endif %}
+                                        </button>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="px-5">
+                    <h6 class="text-lg font-bold">Top Poster</h6>
+                    <ul role="list" class="divide-y divide-gray-100">
+                        {% for top_poster in top_posters %}
+                            <li class="flex justify-between gap-x-6 py-5">
+                                <div class="flex min-w-0 gap-x-4">
+                                    <img class="h-8 w-8 flex-none rounded-full bg-gray-50"
+                                         src="{{ top_poster.author_profile_picture }}" alt="">
+                                    <div class="min-w-0 flex-auto">
+                                        <p class="text-sm font-semibold leading-6 text-gray-900">{{ top_poster.author_name }}</p>
+                                        <p class="mt-1 truncate text-xs leading-5 text-gray-500">
+                                            <span class="font-semibold">Total post:</span> {{ top_poster.topic_count }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="hidden shrink-0 sm:flex sm:flex-col sm:items-end">
+                                    <p class="text-sm leading-6 text-gray-900">{{ top_poster.user_role }}</p>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div id="addNewPostModal" class="hidden relative z-10" aria-labelledby="modal-title" role="dialog"
+             aria-modal="true">
+            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+                <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                    <div
+                            class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                        <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                            <button onclick="showAddNewPostModal()" type="button"
+                                    class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
+                                <span class="sr-only">Close</span>
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                     stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                                </svg>
+                            </button>
+                        </div>
+                        <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">New Post</h3>
+                        <hr>
+                        <div class="mt-5">
+                            <form hx-post="{% url 'save_new_topic_service' slug=current_slug %}">
+                                {% csrf_token %}
+                                <div>
+                                    <label for="title" class="block text-sm font-semibold text-gray-900">Title</label>
+                                    <div class="mt-2">
+                                        <input name="title" id="title" required
+                                               class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                                               placeholder="Your title"/>
+                                    </div>
+                                </div>
+                                <div class="mt-5">
+                                    <label for="body"
+                                           class="block text-sm font-semibold text-gray-900">Content</label>
+                                    <div class="mt-2">
+                                    <textarea id="body" name="body" rows="5"
+                                              class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-pink-600 sm:text-sm sm:leading-6"
+                                              placeholder="Post content"></textarea>
+                                    </div>
+                                </div>
+                                <div class="mt-5 sm:mt-6 sm:flex sm:flex-row-reverse">
+                                    <button type="submit"
+                                            class="inline-flex w-full justify-center rounded-md bg-pink-600 px-3 py-2 text-sm font-semibold text-white shadow-sm ring-1 ring-inset ring-pink-300 hover:bg-pink-700 sm:ml-3 sm:w-auto">
+                                        Post
+                                    </button>
+                                    <button onclick="showAddNewPostModal()" type="button"
+                                            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showAddNewPostModal() {
+            const addNewPostModal = document.getElementById("addNewPostModal")
+            if (addNewPostModal) {
+                if (addNewPostModal.classList.contains('hidden')) {
+                    addNewPostModal.classList.remove('hidden')
+                } else {
+                    addNewPostModal.classList.add('hidden')
+                }
+            } else {
+                console.log('addNewPostModal element not found.');
+            }
+        }
+
+    </script>
+{% endblock %}

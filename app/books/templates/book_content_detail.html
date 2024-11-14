@@ -1,0 +1,114 @@
+{% extends 'layout.html' %}
+{% load tailwind_filters %}
+{% load humanize %}
+{% load human_readable_time %}
+
+{% block layout %}
+    <div class="bg-white px-6 py-10 lg:px-8">
+        <div id="message">
+
+        </div>
+        <div class="mx-auto max-w-3xl text-base leading-7 text-gray-700 mt-10">
+            <p class="text-base font-semibold leading-7 text-pink-600">
+                {{ content.book }}
+            </p>
+            <h1 class="mt-2 text-3xl font-bold tracking-tight text-gray-900 sm:text-4xl">
+                <span class="text-pink-600">Chapter {{ content.chapter_number }}: </span>
+                {{ content.title }}
+            </h1>
+            <p class="mt-6 text-sm leading-8">
+                <span class="font-semibold">Published: </span>
+                {{ content.created_at|naturaltime }}
+            </p>
+            <p class="text-sm leading-8">
+                <span class="font-semibold">Estimated reading time: </span>
+                <span class="inline-flex items-center rounded-full bg-pink-100 px-2 py-1 text-xs font-medium text-pink-700">
+                    {{ content.get_reading_time|human_readable_time }}
+                </span>
+            </p>
+
+            <div class="relative my-5">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center">
+                    <span class="bg-white px-2 text-sm text-gray-500">Content</span>
+                </div>
+            </div>
+
+            <div class="mt-8 max-w-2xl">
+                <p class="text-sm lg:text-base leading-8 break-all">
+                    {{ content.content|safe }}
+                </p>
+            </div>
+
+            <div class="relative my-5">
+                <div class="absolute inset-0 flex items-center" aria-hidden="true">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center">
+                    <span class="bg-white px-2 text-sm text-gray-500">End</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div data-dial-init class="fixed bottom-6 right-10 lg:right-24 group">
+            <div id="speed-dial-menu-dropdown"
+                 class="flex flex-col justify-end hidden py-1 mb-4 space-y-2 bg-white border border-gray-100 rounded-lg shadow-sm">
+                <ul class="text-sm text-gray-500">
+                    {% if content.chapter_number != 1 %}
+                        <li>
+                            <a hx-get="{% url 'previous_chapter_service' slug=content.slug %}" hx-target="#message"
+                               hx-swap="outerHTML"
+                               class="cursor-pointer flex items-center px-5 py-2 bg-pink-50 px-2 py-1 text-xs font-semibold text-pink-600 shadow-sm hover:bg-pink-100">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                     stroke-width="1.5"
+                                     stroke="currentColor" class="w-3.5 h-3.5 me-2">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M6.75 15.75 3 12m0 0 3.75-3.75M3 12h18"/>
+                                </svg>
+                                <span class="text-sm font-medium">Previous chapter</span>
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li>
+                        <a hx-get="{% url 'next_chapter_service' slug=content.slug %}" hx-target="#message"
+                           hx-swap="outerHTML"
+                           class="cursor-pointer flex items-center px-5 py-2 bg-pink-50 px-2 py-1 text-xs font-semibold text-pink-600 shadow-sm hover:bg-pink-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" class="w-3.5 h-3.5 me-2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M17.25 8.25 21 12m0 0-3.75 3.75M21 12H3"/>
+                            </svg>
+                            <span class="text-sm font-medium">Next chapter</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/book/detail/{{ content.book.slug }}"
+                           class="cursor-pointer flex items-center px-5 py-2 bg-pink-50 px-2 py-1 text-xs font-semibold text-pink-600 shadow-sm hover:bg-pink-100">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" class="w-3.5 h-3.5 me-2">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      d="M9 15 3 9m0 0 6-6M3 9h12a6 6 0 0 1 0 12h-3"/>
+                            </svg>
+                            <span class="text-sm font-medium">Table of contents</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+            <button type="button" data-dial-toggle="speed-dial-menu-dropdown" aria-controls="speed-dial-menu-dropdown"
+                    aria-expanded="false"
+                    class="flex items-center justify-center ml-auto text-white bg-pink-700 rounded-full w-10 h-10 lg:w-14 lg:h-14 hover:bg-pink-800 focus:ring-4 focus:ring-pink-300 focus:outline-none">
+                <svg class="w-6 h-6" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+                     viewBox="0 0 16 3">
+                    <path d="M2 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Zm6.041 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM14 0a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z"/>
+                </svg>
+                <span class="sr-only">Open actions menu</span>
+            </button>
+        </div>
+    </div>
+
+
+
+{% endblock %}

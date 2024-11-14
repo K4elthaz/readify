@@ -1,0 +1,784 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    
+    {% if not user.is_verified %}
+        <div class="flex justify-center gap-x-6 bg-pink-600 px-6 py-2.5">
+            <p class="text-sm leading-6 text-white">
+                <a href="#">
+                    <strong class="font-semibold">Email not verified</strong>
+                    <svg viewBox="0 0 2 2" class="mx-2 inline h-0.5 w-0.5 fill-current" aria-hidden="true">
+                        <circle cx="1" cy="1" r="1"/>
+                    </svg>
+                    Please check your inbox and follow the verification link.
+                </a>
+            </p>
+        </div>
+    {% endif %}
+    <div>
+        <!-- Off-canvas menu for mobile, show/hide based on off-canvas menu state. -->
+        <div class="relative z-50 hidden lg:hidden" id="sidebar-menu" role="dialog" aria-modal="true">
+            <!--
+              Off-canvas menu backdrop, show/hide based on off-canvas menu state.
+
+              Entering: "transition-opacity ease-linear duration-300"
+                From: "opacity-0"
+                To: "opacity-100"
+              Leaving: "transition-opacity ease-linear duration-300"
+                From: "opacity-100"
+                To: "opacity-0"
+            -->
+            <div class="fixed inset-0 bg-gray-900/80" aria-hidden="true"></div>
+
+            <div class="fixed inset-0 flex">
+
+                <div class="relative mr-16 flex w-full max-w-xs flex-1">
+
+                    <div class="absolute left-full top-0 flex w-16 justify-center pt-5">
+                        <button onclick="showMenu()" type="button" class="-m-2.5 p-2.5">
+                            <span class="sr-only">Close sidebar</span>
+                            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Sidebar component, swap this element with another sidebar if you like -->
+                    <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
+                        <div class="flex justify-center h-20 shrink-0 items-center py-14">
+                            <img class="h-20 w-auto  rounded-full"
+                                 src="https://res.cloudinary.com/djgtcebyx/image/upload/v1727537171/LOGO_aqpwbf.jpg"
+                                 alt="Your Company">
+                        </div>
+                        <nav class="flex flex-1 flex-col">
+                            <ul role="list" class="flex flex-1 flex-col gap-y-7">
+                                {% if user.user_role != "tech_support" %}
+                                    <li>
+                                        <ul role="list" class="-mx-2 space-y-1">
+                                            {% if user.user_role == 'writer' %}
+                                                <li>
+                                                    <!-- Current: "bg-gray-50 text-pink-600", Default: "text-gray-700 hover:text-pink-600 hover:bg-gray-50" -->
+                                                    <p hx-get="{% url 'dashboard' %}" hx-push-url="true"
+                                                       hx-target="body"
+                                                       method="get"
+                                                       class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                             viewBox="0 0 24 24"
+                                                             stroke-width="1.5" stroke="currentColor"
+                                                             class="h-6 w-6 shrink-0 {% if active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+                                                        </svg>
+                                                        Dashboard
+                                                    </p>
+                                                    <p hx-get="{% url 'book_library' %}" hx-push-url="true"
+                                                       hx-target="body"
+                                                       method="get"
+                                                       class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                        <svg class="h-6 w-6 shrink-0 {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                             fill="currentColor" viewBox="0 0 24 24">
+                                                            <path fill-rule="evenodd"
+                                                                  d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z"
+                                                                  clip-rule="evenodd"/>
+                                                        </svg>
+
+                                                        My Library
+                                                    </p>
+
+                                                    <p hx-get="{% url 'explore_communities' %}"
+                                                       hx-push-url="true"
+                                                       hx-target="body"
+                                                       method="get"
+                                                       class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                             viewBox="0 0 24 24"
+                                                             stroke-width="1.5" stroke="currentColor"
+                                                             class="h-6 w-6 shrink-0 {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                  d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
+                                                        </svg>
+
+                                                        Communities
+                                                    </p>
+                                                </li>
+                                            {% endif %}
+
+                                            {% if user.user_role == 'reader' %}
+                                                <li>
+                                                    <!-- Current: "bg-gray-50 text-pink-600", Default: "text-gray-700 hover:text-pink-600 hover:bg-gray-50" -->
+                                                    <p hx-get="{% url 'browse_books' %}" hx-push-url="true"
+                                                       hx-target="body"
+                                                       method="get"
+                                                       class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                {% if browse_books %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                             viewBox="0 0 24 24"
+                                                             stroke-width="1.5" stroke="currentColor"
+                                                             class="h-6 w-6 shrink-0 {% if browse_books %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                  d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+                                                        </svg>
+                                                        Browse books
+                                                    </p>
+                                                    <p hx-get="{% url 'my_favorites' %}" hx-push-url="true"
+                                                       hx-target="body"
+                                                       method="get"
+                                                       class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                        <svg class="h-6 w-6 shrink-0 {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}"
+                                                             aria-hidden="true"
+                                                             xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                             fill="currentColor" viewBox="0 0 24 24">
+                                                            <path fill-rule="evenodd"
+                                                                  d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z"
+                                                                  clip-rule="evenodd"/>
+                                                        </svg>
+
+                                                        My Favorites
+                                                    </p>
+
+
+                                                    <p hx-get="{% url 'explore_communities' %}"
+                                                       hx-push-url="true"
+                                                       hx-target="body"
+                                                       method="get"
+                                                       class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                             viewBox="0 0 24 24"
+                                                             stroke-width="1.5" stroke="currentColor"
+                                                             class="h-6 w-6 shrink-0 {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                  d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
+                                                        </svg>
+
+                                                        Communities
+                                                    </p>
+                                                    <p hx-get="{% url 'social' %}" hx-push-url="true" hx-target="body"
+                                                       method="get"
+                                                       class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if social_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+
+                                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                             viewBox="0 0 24 24"
+                                                             stroke-width="1.5" stroke="currentColor"
+                                                             class="h-6 w-6 shrink-0 {% if social_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                                  d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z"/>
+                                                        </svg>
+                                                        Social Newsfeed
+                                                    </p>
+                                                </li>
+                                            {% endif %}
+                                            <li>
+
+                                                <p hx-get="{% url 'messages' %}"
+                                                   hx-push-url="true"
+                                                   hx-target="body"
+                                                   method="get"
+                                                   class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                         viewBox="0 0 24 24"
+                                                         stroke-width="1.5" stroke="currentColor"
+                                                         class="h-6 w-6 shrink-0 {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                              d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/>
+                                                    </svg>
+                                                    Messages
+                                                </p>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li hx-get="{% url 'get_communities_service' %}" hx-trigger="load"
+                                        hx-target="#communityListMobile"
+                                        hx-swap="innerHTML">
+                                        <div class="text-xs font-semibold leading-6 text-gray-400">Communities</div>
+                                        <ul id="communityListMobile" role="list" class="-mx-2 mt-2 space-y-1">
+
+                                        </ul>
+                                    </li>
+                                {% else %}
+                                    <li>
+
+                                        <p hx-get="{% url 'messages' %}"
+                                           hx-push-url="true"
+                                           hx-target="body"
+                                           method="get"
+                                           class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                 viewBox="0 0 24 24"
+                                                 stroke-width="1.5" stroke="currentColor"
+                                                 class="h-6 w-6 shrink-0 {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/>
+                                            </svg>
+                                            Messages
+                                        </p>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Static sidebar for desktop -->
+        <div class="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
+            <!-- Sidebar component, swap this element with another sidebar if you like -->
+            <div class="flex grow flex-col gap-y-5 overflow-y-auto border-r border-gray-200 bg-white px-6 pb-4">
+                <div class="flex justify-center h-16 shrink-0 items-center py-20">
+                    <img class="h-28 w-auto rounded-full"
+                         src="https://res.cloudinary.com/djgtcebyx/image/upload/v1727537171/LOGO_aqpwbf.jpg"
+                         alt="Your Company">
+                </div>
+                <nav class="flex flex-1 flex-col">
+                    <ul role="list" class="flex flex-1 flex-col gap-y-7">
+                        <li>
+                            <ul role="list" class="-mx-2 space-y-1">
+                                {% if user.user_role != "tech_support" %}
+                                    {% if user.user_role == 'writer' %}
+                                        <li>
+                                            <!-- Current: "bg-gray-50 text-pink-600", Default: "text-gray-700 hover:text-pink-600 hover:bg-gray-50" -->
+                                            <p hx-get="{% url 'dashboard' %}" hx-push-url="true" hx-target="body"
+                                               method="get"
+                                               class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                            {% if active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor"
+                                                     class="h-6 w-6 shrink-0 {% if active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+                                                </svg>
+                                                Dashboard
+                                            </p>
+                                            <p hx-get="{% url 'book_library' %}" hx-push-url="true" hx-target="body"
+                                               method="get"
+                                               class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                            {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <svg class="h-6 w-6 shrink-0 {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}"
+                                                     aria-hidden="true"
+                                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                     fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd"
+                                                          d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z"
+                                                          clip-rule="evenodd"/>
+                                                </svg>
+
+                                                My Library
+                                            </p>
+                                            <p hx-get="{% url 'explore_communities' %}"
+                                               hx-push-url="true"
+                                               hx-target="body"
+                                               method="get"
+                                               class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                     viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor"
+                                                     class="h-6 w-6 shrink-0 {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
+                                                </svg>
+
+                                                Communities
+                                            </p>
+                                        </li>
+                                    {% endif %}
+
+                                    {% if user.user_role == 'reader' %}
+                                        <li>
+                                            <!-- Current: "bg-gray-50 text-pink-600", Default: "text-gray-700 hover:text-pink-600 hover:bg-gray-50" -->
+                                            <p hx-get="{% url 'browse_books' %}" hx-push-url="true" hx-target="body"
+                                               method="get"
+                                               class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                            {% if browse_books %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor"
+                                                     class="h-6 w-6 shrink-0 {% if browse_books %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z"/>
+                                                </svg>
+                                                Browse books
+                                            </p>
+                                            <p hx-get="{% url 'my_favorites' %}" hx-push-url="true" hx-target="body"
+                                               method="get"
+                                               class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                            {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <svg class="h-6 w-6 shrink-0 {% if book_library_active %} text-pink-600 {% else %} text-gray-500 {% endif %}"
+                                                     aria-hidden="true"
+                                                     xmlns="http://www.w3.org/2000/svg" width="24" height="24"
+                                                     fill="currentColor" viewBox="0 0 24 24">
+                                                    <path fill-rule="evenodd"
+                                                          d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z"
+                                                          clip-rule="evenodd"/>
+                                                </svg>
+
+                                                My Favorites
+                                            </p>
+                                            <p hx-get="{% url 'explore_communities' %}"
+                                               hx-push-url="true"
+                                               hx-target="body"
+                                               method="get"
+                                               class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none"
+                                                     viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor"
+                                                     class="h-6 w-6 shrink-0 {% if forums_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 0 1-.825-.242m9.345-8.334a2.126 2.126 0 0 0-.476-.095 48.64 48.64 0 0 0-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0 0 11.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155"/>
+                                                </svg>
+
+                                                Communities
+                                            </p>
+                                            <p hx-get="{% url 'social' %}" hx-push-url="true" hx-target="body"
+                                               method="get"
+                                               class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                            {% if social_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                     stroke-width="1.5" stroke="currentColor"
+                                                     class="h-6 w-6 shrink-0 {% if social_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                                          d="M2.25 15a4.5 4.5 0 0 0 4.5 4.5H18a3.75 3.75 0 0 0 1.332-7.257 3 3 0 0 0-3.758-3.848 5.25 5.25 0 0 0-10.233 2.33A4.502 4.502 0 0 0 2.25 15Z"/>
+                                                </svg>
+                                                Social Newsfeed
+                                            </p>
+                                        </li>
+                                    {% endif %}
+                                    <li>
+
+                                        <p hx-get="{% url 'messages' %}"
+                                           hx-push-url="true"
+                                           hx-target="body"
+                                           method="get"
+                                           class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                 stroke-width="1.5" stroke="currentColor"
+                                                 class="h-6 w-6 shrink-0 {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/>
+                                            </svg>
+                                            Messages
+                                        </p>
+                                    </li>
+                                {% else %}
+                                    <li>
+
+                                        <p hx-get="{% url 'messages' %}"
+                                           hx-push-url="true"
+                                           hx-target="body"
+                                           method="get"
+                                           class="cursor-pointer group flex gap-x-3 rounded-md bg-gray-50 p-2 text-sm font-semibold leading-6
+                                                    {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                 stroke-width="1.5" stroke="currentColor"
+                                                 class="h-6 w-6 shrink-0 {% if messages_active %} text-pink-600 {% else %} text-gray-500 {% endif %}">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M8.625 12a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375M21 12c0 4.556-4.03 8.25-9 8.25a9.764 9.764 0 0 1-2.555-.337A5.972 5.972 0 0 1 5.41 20.97a5.969 5.969 0 0 1-.474-.065 4.48 4.48 0 0 0 .978-2.025c.09-.457-.133-.901-.467-1.226C3.93 16.178 3 14.189 3 12c0-4.556 4.03-8.25 9-8.25s9 3.694 9 8.25Z"/>
+                                            </svg>
+                                            Messages
+                                        </p>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </li>
+                        <li hx-get="{% url 'get_communities_service' %}" hx-trigger="load" hx-target="#communityList"
+                            hx-swap="innerHTML">
+                            <div class="text-xs font-semibold leading-6 text-gray-400">Communities</div>
+                            <ul id="communityList" role="list" class="-mx-2 mt-2 space-y-1">
+
+                            </ul>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+
+
+        <div class="lg:pl-72">
+            <div class="sticky top-0 z-40 lg:mx-auto lg:max-w-7xl lg:px-8">
+                <div class="flex h-16 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 sm:px-6 lg:px-0 lg:shadow-none">
+                    <button onclick="showMenu()" type="button" class="-m-2.5 p-2.5 text-gray-700 lg:hidden">
+                        <span class="sr-only">Open sidebar</span>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"
+                             aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/>
+                        </svg>
+                    </button>
+
+                    <!-- Separator -->
+                    <div class="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true"></div>
+
+                    <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
+                        <div class="relative flex flex-1">
+                        </div>
+                        <div class="flex items-center gap-x-4 lg:gap-x-6">
+                            {% if user.user_role == "reader" %}
+                                <div hx-get="{% url 'get_coins_service' %}" hx-target="#rewards" hx-swap="innerHTML"
+                                     hx-trigger="load"></div>
+                                <div id="rewards" class="flex gap-x-1"></div>
+
+                            {% endif %}
+                            <div hx-get="{% url 'notifications_count_service' %}" hx-target="#notifCount"
+                                 hx-swap="innerHTML" hx-trigger="every 1s"></div>
+                            <button onclick="showNotificationsDrawer()" type="button"
+                                    class="-m-2.5 p-2.5 text-gray-400 hover:text-gray-500 relative inline-block">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                     stroke="currentColor" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/>
+                                </svg>
+                                <div id="notifCount"></div>
+                            </button>
+
+                            <!-- Separator -->
+                            <div class="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" aria-hidden="true"></div>
+
+                            <!-- Profile dropdown -->
+                            <div class="relative">
+                                <button onclick="showProfile()" type="button" class="-m-1.5 flex items-center p-1.5"
+                                        id="user-menu-button"
+                                        aria-expanded="false" aria-haspopup="true">
+                                    <span class="sr-only">Open user menu</span>
+                                    <img class="h-8 w-8 rounded-full bg-gray-50"
+                                         src="{{ user.profile_picture }}"
+                                         alt="">
+                                    <span class="hidden lg:flex lg:items-center">
+                                      <span class="ml-4 text-sm font-semibold leading-6 text-gray-900"
+                                            aria-hidden="true">{{ user.full_name }}</span>
+                                      <svg class="ml-2 h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"
+                                           aria-hidden="true">
+                                        <path fill-rule="evenodd"
+                                              d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                              clip-rule="evenodd"/>
+                                      </svg>
+                                    </span>
+                                </button>
+                                <div class="hidden user-menu absolute right-0 z-10 mt-2.5 w-32 origin-top-right rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none"
+                                     role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button"
+                                     tabindex="-1">
+                                    <!-- Active: "bg-gray-50", Not Active: "" -->
+                                    <a href="{% url 'user_profile' pk=user.id %}"
+                                       class="cursor-pointer block px-3 py-1 text-sm leading-6 text-gray-900"
+                                       role="menuitem"
+                                       tabindex="-1" id="user-menu-item-0">Your profile</a>
+                                    <p hx-get="{% url 'logout_service' %}" hx-push-url="true" hx-target="body"
+                                       method="get"
+                                       class="cursor-pointer block px-3 py-1 text-sm leading-6 text-gray-900"
+                                       role="menuitem"
+                                       id="signingOut"
+                                       tabindex="-1" id="user-menu-item-1">Sign out</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <main class="py-10">
+                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                    <!-- Your content -->
+                    {% block layout %}
+                    {% endblock %}
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <div id="rewardHelp" class="hidden relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+
+        <div class="fixed inset-0 z-10 w-screen overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+
+                <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+                    <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+                        <button onclick="showRewardHelp()" type="button"
+                                class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:ring-offset-2">
+                            <span class="sr-only">Close</span>
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                                 stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
+                            <h3 class="text-base font-semibold leading-6 text-gray-900" id="modal-title">
+                                How to Earn Rewards
+                            </h3>
+                            <p class="text-xs text-gray-500 mt-2">
+                                Complete the tasks below to earn rewards and use them to unlock new chapters.
+                            </p>
+
+                            <div class="mt-5">
+                                <ul role="list" class="space-y-6">
+                                    <li class="relative flex gap-x-4">
+                                        <div class="absolute inset-y-0 left-0 w-6 flex justify-center">
+                                            <div class="w-px bg-gray-200"></div>
+                                        </div>
+                                        <div class="relative flex h-6 w-6 items-center justify-center bg-white">
+                                            <div class="h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300"></div>
+                                        </div>
+                                        <p class="flex-auto py-0.5 text-sm leading-5 text-gray-500">
+                                            <span class="font-medium text-gray-900">Login daily to earn a reward (1 coin)</span>
+                                        </p>
+                                    </li>
+
+                                    <li class="relative flex gap-x-4">
+                                        <div class="absolute inset-y-0 left-0 w-6 flex justify-center">
+                                            <div class="w-px bg-gray-200"></div>
+                                        </div>
+                                        <div class="relative flex h-6 w-6 items-center justify-center bg-white">
+                                            <div class="h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300"></div>
+                                        </div>
+                                        <p class="flex-auto py-0.5 text-sm leading-5 text-gray-500">
+                                            <span class="font-medium text-gray-900">Create 20 posts on the social feed daily (10 coins)</span>
+                                        </p>
+                                    </li>
+
+                                    <li class="relative flex gap-x-4">
+                                        <div class="absolute inset-y-0 left-0 w-6 flex justify-center">
+                                            <div class="w-px bg-gray-200"></div>
+                                        </div>
+                                        <div class="relative flex h-6 w-6 items-center justify-center bg-white">
+                                            <div class="h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300"></div>
+                                        </div>
+                                        <p class="flex-auto py-0.5 text-sm leading-5 text-gray-500">
+                                            <span class="font-medium text-gray-900">Finish reading a book (20 coins)</span>
+                                        </p>
+                                    </li>
+
+                                    <li class="relative flex gap-x-4">
+                                        <div class="absolute inset-y-0 left-0 w-6 flex justify-center">
+                                            <div class="w-px bg-gray-200"></div>
+                                        </div>
+                                        <div class="relative flex h-6 w-6 items-center justify-center bg-white">
+                                            <div class="h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300"></div>
+                                        </div>
+                                        <p class="flex-auto py-0.5 text-sm leading-5 text-gray-500">
+                                            <span class="font-medium text-gray-900">Post 20 times in forums daily (10 coins)</span>
+                                        </p>
+                                    </li>
+
+                                    <li class="relative flex gap-x-4">
+                                        <div class="relative flex h-6 w-6 items-center justify-center bg-white">
+                                            <div class="h-1.5 w-1.5 rounded-full bg-gray-100 ring-1 ring-gray-300"></div>
+                                        </div>
+                                        <p class="flex-auto py-0.5 text-sm leading-5 text-gray-500">
+                                            <span class="font-medium text-gray-900">Invite a friend to the platform (20 coins)</span>
+                                        </p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications -->
+    <div id="notificationsDrawer"
+         class="hidden fixed top-0 right-0 z-40 h-screen py-4 overflow-y-auto border-l border-gray-300 shadow bg-white w-[400px]"
+         tabindex="-1">
+        <div class="mx-2">
+            <h5 id="drawer-right-label"
+                class="inline-flex items-center mb-4 text-base font-medium text-gray-500">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                     stroke="currentColor" class="w-6 h-6 me-2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"/>
+                </svg>
+                Notifications
+            </h5>
+            <button onclick="showNotificationsDrawer()" type="button"
+                    class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 absolute top-2.5 end-2.5 inline-flex items-center justify-center">
+                <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none"
+                     viewBox="0 0 14 14">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+                </svg>
+                <span class="sr-only">Close menu</span>
+            </button>
+        </div>
+
+        <div hx-get="{% url 'get_notifications_service' %}" hx-target="#notifications" hx-swap="innerHTML"
+             hx-trigger="every 1s"></div>
+        <div id="notifications">
+
+        </div>
+    </div>
+
+    <div hx-get="{% url 'show_success_posting_in_forums_today_service' %}" hx-target="#forumsRewardsModal"
+         hx-trigger="load"></div>
+    <div id="forumsRewardsModal"></div>
+    <script>
+        function checkVerifyDisable(){
+            if(`{{ user.is_verified }}` == 'False'){
+                document.querySelectorAll('p, button, a, div').forEach(element => {
+                    // Check if the element should be excluded by its id
+                    
+                    if (element.id !== 'signingOut' && element.id !== 'user-menu-button') {
+                        element.style.pointerEvents = 'none';
+                        console.log(element.id ,'fasd')
+                    }else{
+                        element.style.pointerEvents = 'auto';
+                    }
+                });
+            }else{
+                document.querySelectorAll('p, button, a, div').forEach(element => {
+                    element.style.pointerEvents = 'auto';
+                });
+            }
+        }
+        checkVerifyDisable()
+        setInterval(checkVerifyDisable, 5000);
+        
+        function showProfile() {
+
+            const userMenu = document.getElementsByClassName('user-menu')[0];
+            if (userMenu) {
+                if (userMenu.classList.contains('hidden')) {
+                    userMenu.classList.remove('hidden')
+                } else {
+                    userMenu.classList.add('hidden')
+                }
+            } else {
+                console.log('User menu element not found.');
+            }
+        }
+
+        function showMenu() {
+            const sidebarMenu = document.getElementById("sidebar-menu")
+
+            if (sidebarMenu) {
+                if (sidebarMenu.classList.contains('hidden')) {
+                    sidebarMenu.classList.remove('hidden')
+                } else {
+                    sidebarMenu.classList.add('hidden')
+                }
+            } else {
+                console.log('sidebarMenu element not found.');
+            }
+        }
+
+        function showForumsMenuNav() {
+            const forumsMenuNav = document.getElementById("forumsMenuNav")
+
+            if (forumsMenuNav) {
+                if (forumsMenuNav.classList.contains('hidden')) {
+                    forumsMenuNav.classList.remove('hidden')
+                } else {
+                    forumsMenuNav.classList.add('hidden')
+                }
+            } else {
+                console.log('forumsMenuNav element not found.');
+            }
+        }
+
+        function showWriterForumsMenuNav() {
+            const forumsMenuNav = document.getElementById("writerForumsMenuNav")
+
+            if (forumsMenuNav) {
+                if (forumsMenuNav.classList.contains('hidden')) {
+                    forumsMenuNav.classList.remove('hidden')
+                } else {
+                    forumsMenuNav.classList.add('hidden')
+                }
+            } else {
+                console.log('forumsMenuNav element not found.');
+            }
+        }
+
+        function showMobileForumsMenuNav() {
+            const mobileForumsMenuNav = document.getElementById("mobileForumsMenuNav")
+
+            if (mobileForumsMenuNav) {
+                if (mobileForumsMenuNav.classList.contains('hidden')) {
+                    mobileForumsMenuNav.classList.remove('hidden')
+                } else {
+                    mobileForumsMenuNav.classList.add('hidden')
+                }
+            } else {
+                console.log('mobileForumsMenuNav element not found.');
+            }
+        }
+
+        function showMobileWriterForumsMenuNav() {
+            const mobileForumsMenuNav = document.getElementById("mobileWriterForumsMenuNav")
+
+            if (mobileForumsMenuNav) {
+                if (mobileForumsMenuNav.classList.contains('hidden')) {
+                    mobileForumsMenuNav.classList.remove('hidden')
+                } else {
+                    mobileForumsMenuNav.classList.add('hidden')
+                }
+            } else {
+                console.log('mobileForumsMenuNav element not found.');
+            }
+        }
+
+        function showRewardHelp() {
+            const rewardHelp = document.getElementById("rewardHelp")
+
+            if (rewardHelp) {
+                if (rewardHelp.classList.contains('hidden')) {
+                    rewardHelp.classList.remove('hidden')
+                } else {
+                    rewardHelp.classList.add('hidden')
+                }
+            } else {
+                console.log('rewardHelp element not found.');
+            }
+        }
+
+        function showNotificationsDrawer() {
+            const notificationsDrawer = document.getElementById("notificationsDrawer")
+
+            if (notificationsDrawer) {
+                if (notificationsDrawer.classList.contains('hidden')) {
+                    notificationsDrawer.classList.remove('hidden')
+                } else {
+                    notificationsDrawer.classList.add('hidden')
+                }
+            } else {
+                console.log('notificationsDrawer element not found.');
+            }
+        }
+
+
+        function showBanner() {
+            document.getElementById('periodic-banner').style.display = 'flex';
+        }
+
+        function hideBanner() {
+            document.getElementById('periodic-banner').style.display = 'none';
+        }
+
+        function manageBannerDisplay() {
+            showBanner();
+            setTimeout(hideBanner, 60000); // Hide after 1 minute
+        }
+
+        // Start the periodic display
+        manageBannerDisplay();
+        setInterval(manageBannerDisplay, 5000); // Show every 5 minutes (300000 ms)
+        
+    </script>
+
+{% endblock %}

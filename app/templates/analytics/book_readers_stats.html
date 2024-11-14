@@ -1,0 +1,91 @@
+<div class="border border-gray-100 bg-white rounded-lg shadow p-4 md:p-6">
+    <div class="flex justify-between">
+        <div>
+            <h5 class="leading-none text-3xl font-bold text-gray-900 pb-2">
+                {{ total_favorited_books_per_day|length }} <!-- Total favorite count -->
+            </h5>
+            <p class="text-base font-normal text-gray-500">Total Favorited Books</p>
+        </div>
+        <div class="flex items-center px-2.5 py-0.5 text-base font-semibold text-green-500 text-center">
+        </div>
+    </div>
+    <div id="area-chart"></div>
+    <div class="grid grid-cols-1 items-center border-gray-200 border-t justify-between">
+        <div class="flex justify-between items-center pt-5">
+        </div>
+    </div>
+</div>
+
+<script>
+    const options = {
+        chart: {
+            height: "100%",
+            maxWidth: "100%",
+            type: "area",
+            fontFamily: "Inter, sans-serif",
+            dropShadow: {
+                enabled: false,
+            },
+            toolbar: {
+                show: false,
+            },
+        },
+        tooltip: {
+            enabled: true,
+            x: {
+                show: false,
+            },
+        },
+        fill: {
+            type: "gradient",
+            gradient: {
+                opacityFrom: 0.55,
+                opacityTo: 0,
+                shade: "#ec4899",
+                gradientToColors: ["#ec4899"],
+            },
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        stroke: {
+            width: 6,
+        },
+        grid: {
+            show: false,
+            strokeDashArray: 4,
+            padding: {
+                left: 2,
+                right: 2,
+                top: 0
+            },
+        },
+        series: [
+            {
+                name: "Favorited Books",
+                data: [{% for data in total_favorited_books_per_day %}{{ data.favorites_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                color: "#ec4899",
+            },
+        ],
+        xaxis: {
+            categories: [{% for data in total_favorited_books_per_day %}"{{ data.day }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            labels: {
+                show: false,
+            },
+            axisBorder: {
+                show: false,
+            },
+            axisTicks: {
+                show: false,
+            },
+        },
+        yaxis: {
+            show: false,
+        },
+    }
+
+    if (document.getElementById("area-chart") && typeof ApexCharts !== 'undefined') {
+        const chart = new ApexCharts(document.getElementById("area-chart"), options);
+        chart.render();
+    }
+</script>

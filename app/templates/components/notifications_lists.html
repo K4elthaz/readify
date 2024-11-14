@@ -1,0 +1,32 @@
+{% load humanize %}
+{% for notification in notifications %}
+
+    <div class="relative mt-2">
+        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center">
+            {% if not notification.is_read %}
+                <span class="bg-white px-2 text-xs text-gray-500">New</span>
+            {% endif %}
+        </div>
+    </div>
+    <div class="bg-gray-100 flex items-start p-2">
+        <div class="ml-3 w-0 flex-1 pt-0.5">
+            {{ notification.message|safe }}
+            <div class="flex gap-x-1">
+                <p class="text-xs text-gray-500 mt-2">{{ notification.created_at|naturaltime }}</p>
+                {% if not notification.is_read %}
+                    <p hx-get="{% url 'mark_notifications_as_read_service' notification_id=notification.id %}" class="text-xs text-purple-500 mt-2 hover:underline cursor-pointer">Mark as Read</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="relative">
+        <div class="absolute inset-0 flex items-center" aria-hidden="true">
+            <div class="w-full border-t border-gray-300"></div>
+        </div>
+        <div class="relative flex justify-center">
+        </div>
+    </div>
+{% endfor %}

@@ -1,0 +1,113 @@
+<div class="bg-white rounded-lg shadow p-4 md:p-6">
+    <div class="flex justify-between border-gray-200 border-b pb-3">
+        <dl>
+            <dd class="leading-none text-3xl font-bold text-gray-900">Top 5 Most Reviewed/Commented Books</dd>
+        </dl>
+        <div>
+        </div>
+    </div>
+
+    <div id="bar-chart"></div>
+    <div class="grid grid-cols-1 items-center border-gray-200 border-t justify-between">
+        <div class="flex justify-between items-center pt-5">
+            <!-- Placeholder for additional content/buttons if needed -->
+        </div>
+    </div>
+</div>
+
+<script>
+    const topReviewedOptions = {
+        series: [
+            {
+                name: "Rates",
+                color: "#ec4899",
+                data: [{% for rate in book_rate_counts %}{{ rate.count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            },
+            {
+                name: "Comments",
+                color: "#a855f7",
+                data: [{% for rate in book_rate_counts %}{{ rate.total_count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+            }
+        ],
+        chart: {
+            sparkline: {
+                enabled: false,
+            },
+            type: "bar",
+            width: "100%",
+            height: 400,
+            toolbar: {
+                show: false,
+            }
+        },
+        fill: {
+            opacity: 1,
+        },
+        plotOptions: {
+            bar: {
+                horizontal: true,
+                columnWidth: "100%",
+                borderRadiusApplication: "end",
+                borderRadius: 6,
+                dataLabels: {
+                    position: "top",
+                },
+            },
+        },
+        legend: {
+            show: true,
+            position: "bottom",
+        },
+        dataLabels: {
+            enabled: false,
+        },
+        tooltip: {
+            shared: true,
+            intersect: false,
+            y: {
+                formatter: function (value) {
+                    return value;
+                }
+            }
+        },
+        xaxis: {
+            labels: {
+                show: true,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                },
+            },
+            categories: [{% for rate in book_rate_counts %}"{{ rate.book__title }}"{% if not forloop.last %}, {% endif %}{% endfor %}],
+            axisTicks: {
+                show: false,
+            },
+            axisBorder: {
+                show: false,
+            },
+        },
+        yaxis: {
+            labels: {
+                show: true,
+                style: {
+                    fontFamily: "Inter, sans-serif",
+                    cssClass: 'text-xs font-normal fill-gray-500 dark:fill-gray-400'
+                }
+            }
+        },
+        grid: {
+            show: true,
+            strokeDashArray: 4,
+            padding: {
+                left: 2,
+                right: 2,
+                top: -20
+            },
+        }
+    }
+
+    if (document.getElementById("bar-chart") && typeof ApexCharts !== 'undefined') {
+        const chart = new ApexCharts(document.getElementById("bar-chart"), topReviewedOptions);
+        chart.render();
+    }
+</script>

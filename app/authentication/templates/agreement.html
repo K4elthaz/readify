@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-3xl">
+            <div class="overflow-hidden rounded-lg bg-white shadow">
+                <div class="px-4 py-4 sm:px-6 lg:px-8 lg:py-5">
+                    <table class="min-w-full divide-y divide-gray-300">
+                        <tbody class="bg-white">
+                        <tr class="even:bg-gray-50">
+                            <td class="py-2 pl-4 pr-3 text-base font-semibold text-gray-900 sm:text-lg sm:pl-4">
+                                Readify
+                            </td>
+                        </tr>
+                        <tr class="even:bg-gray-50">
+                            <td class="py-2 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-4">Admin</td>
+                        </tr>
+                        <tr class="even:bg-gray-50">
+                            <td class="py-2 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-4">09213409826</td>
+                        </tr>
+                        <tr class="even:bg-gray-50">
+                            <td class="py-2 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-4">{{ date }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
+                    <table class="divide-y divide-gray-300">
+                        <tbody class="bg-white">
+                        <tr class="even:bg-gray-50">
+                            <td class="py-3 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-4">Dear {{ author }},</td>
+                        </tr>
+                        <tr class="even:bg-gray-50">
+                            <td class="py-3 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-4"><span
+                                    class="font-semibold">Subject:</span> Request for
+                                Revenue Sharing from Reader Payments
+                            </td>
+                        </tr>
+                        <tr class="even:bg-gray-50">
+                            <td class="pt-6 pb-3 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                I hope this message finds you well. I'm reaching out regarding the financial
+                                arrangements for the distribution of your work, as a <span
+                                    class="font-semibold"> Writer</span>.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-5 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                As per our existing agreement, Readify provides services such as marketing,
+                                distribution, and platform support to ensure your work reaches a wide audience. With the
+                                increasing number of readers and the corresponding payments received, we believe it's
+                                important to revisit our financial arrangement to ensure mutual benefit and
+                                sustainability.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                We kindly request that a portion of the payments received from readers be shared with
+                                Readify. This adjustment will help cover the costs associated with the services we
+                                provide, including hosting, maintenance, and promotional efforts, which are essential
+                                for the ongoing success and reach of your work.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pt-6 pb-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-4 text-justify leading-6">
+                                We propose the following terms for revenue sharing:
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-3 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                <span class="font-semibold">1. Percentage of Revenue:</span> 30% of the gross revenue
+                                received from reader payments to be allocated to Readify.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-3 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                <span class="font-semibold">2. Payment Schedule:</span> Payments will be made as readers
+                                purchase the work, with detailed statements provided to both parties.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pb-3 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                <span class="font-semibold">3. Review and Adjustments:</span> An annual review of the
+                                terms to ensure fairness and adequacy based on the evolving market and readership.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-5 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                We believe this arrangement will benefit both of us, enabling continued growth and
+                                ensuring that the resources needed to support your work are adequately maintained. We
+                                are open to discussing these terms further and negotiating any aspects to reach a
+                                mutually satisfactory agreement.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="py-3 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                Thank you for your attention to this matter. I look forward to your positive response.
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="pt-5 pb-2 pl-4 pr-3 text-sm text-gray-900 sm:pl-4 text-justify leading-6">
+                                Sincerely,<br>
+                                Admin<br>
+                                Readify
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="px-4 py-4 sm:px-6 lg:px-14 mb-20">
+                    <div class="relative flex items-start">
+                        <div class="flex h-6 items-center">
+                            <input onchange='handleChange(this);' id="agree" aria-describedby="agree-description"
+                                   name="agree" type="checkbox"
+                                   class="h-4 w-4 rounded border-gray-300 text-pink-600 focus:ring-pink-600">
+                        </div>
+                        <div class="ml-3 text-sm leading-6">
+                            <label for="agree" class="font-semibold text-gray-900">By checking this, you acknowledge that
+                                you have read and agree to our terms and conditions</label>
+                        </div>
+                    </div>
+
+                    <br>
+                    <a href="{% url 'referral_code' pk=id %}" id="continueBtn"
+                       class="hidden mt-5 rounded-md bg-pink-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                        Continue
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function handleChange(checkbox) {
+
+            const continueBtn = document.getElementById("continueBtn")
+            if (checkbox.checked === true) {
+                continueBtn.classList.remove('hidden')
+            } else {
+                continueBtn.classList.add('hidden')
+            }
+        }
+    </script>
+{% endblock %}

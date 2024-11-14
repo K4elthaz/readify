@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
+        <div class="bg-white px-6 py-16 sm:py-24 lg:py-32 rounded-lg shadow-lg">
+            <div class="mx-auto max-w-2xl text-center">
+                <h2 class="text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-gray-900">
+                    Discover and Follow Our Featured Authors
+                </h2>
+                <p class="mt-4 sm:mt-6 text-md sm:text-lg leading-7 sm:leading-8 text-gray-600">
+                    Explore a curated selection of authors and follow your favorites to stay updated with their latest
+                    work.
+                </p>
+            </div>
+
+            <div class="mt-16">
+                <div class="mx-auto max-w-7xl px-6 lg:px-8">
+                    <ul role="list"
+                        class="grid grid-cols-2 gap-x-8 gap-y-16 text-center sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-5">
+                        {% for author in authors_list %}
+                            <li class="flex flex-col items-center min-h-[200px]">
+                                <img class="h-24 w-24 rounded-full object-cover" src="{{ author.profile_picture }}"
+                                     alt="{{ author.full_name }}">
+                                <h3 class="mt-6 text-base font-semibold leading-7 tracking-tight text-gray-900 max-w-[90%] truncate">
+                                    {{ author.full_name }}
+                                </h3>
+                                <p class="text-xs leading-6 text-gray-600 max-w-[90%] truncate">
+                                    @{{ author.username }}
+                                </p>
+                                <div class="mt-2">
+                                    {% if not author.is_already_followed %}
+                                        <button hx-post="/follow/author/{{ id }}/{{ author.id }}" type="button"
+                                                class="flex items-center gap-x-1 rounded-full bg-pink-600 px-3 py-1 text-xs font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"
+                                                 stroke-width="1.5" stroke="currentColor" class="h-4 w-4">
+                                                <path stroke-linecap="round" stroke-linejoin="round"
+                                                      d="M12 4.5v15m7.5-7.5h-15"/>
+                                            </svg>
+                                            Follow
+                                        </button>
+                                    {% else %}
+                                        <button type="button"
+                                                class="flex items-center gap-x-1 rounded-full bg-pink-400 px-3 py-1 text-xs font-semibold text-white shadow-sm hover:bg-pink-300 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-300">
+                                            Followed
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+
+                    <div class="flex justify-end mt-12">
+                        <a href="{% url 'referral_code' pk=id %}"
+                           class="rounded-full bg-pink-600 px-5 py-2 text-base font-semibold text-white shadow-sm hover:bg-pink-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-pink-600">
+                            Finish
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
